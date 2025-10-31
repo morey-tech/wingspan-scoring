@@ -8,7 +8,8 @@
 		"vscode": {
 			"extensions": [
 				"anthropic.claude-code",
-				"golang.go"
+				"golang.go",
+				"GitHub.vscode-pull-request-github"
 			]
 		}
 	}
