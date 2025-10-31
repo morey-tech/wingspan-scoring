@@ -48,8 +48,8 @@ func main() {
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
-	// Default: generate random goals from base game
-	availableGoals := goals.GetAllGoals(true, false, false)
+	// Default: generate random goals from all expansions
+	availableGoals := goals.GetAllGoals(true, true, true)
 	selectedGoals, err := goals.SelectRandomGoals(availableGoals)
 	if err != nil {
 		http.Error(w, "Error selecting goals", http.StatusInternalServerError)
@@ -60,8 +60,8 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		Goals:     selectedGoals,
 		HasGoals:  true,
 		BaseGame:  true,
-		European:  false,
-		Oceania:   false,
+		European:  true,
+		Oceania:   true,
 		NumPlayers: 4, // Default to 4 players
 	}
 

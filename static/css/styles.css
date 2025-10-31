@@ -254,6 +254,10 @@ header h1 {
     white-space: nowrap;
 }
 
+.blue-track .track-label {
+    left: -50px;
+}
+
 .blue-track .score-boxes {
     display: flex;
     gap: 3px;

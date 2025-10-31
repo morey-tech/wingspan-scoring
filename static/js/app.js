@@ -4,8 +4,10 @@ let currentMode = 'blue'; // 'blue' or 'green'
 // Player colors
 const PLAYER_COLORS = ['blue', 'purple', 'green', 'red', 'yellow'];
 const PLAYER_COLOR_NAMES = ['Blue', 'Purple', 'Green', 'Red', 'Yellow'];
-// Default color assignments: Player 1 = blue, Player 2 = green, then others in order
-const DEFAULT_PLAYER_COLORS = ['blue', 'green', 'purple', 'red', 'yellow'];
+// Default player names
+const DEFAULT_PLAYER_NAMES = ['Dani', 'Nick', 'Player 3', 'Player 4', 'Player 5'];
+// Default color assignments: Player 1 = blue, Player 2 = yellow, then others in order
+const DEFAULT_PLAYER_COLORS = ['blue', 'yellow', 'green', 'purple', 'red'];
 
 // Game state
 let gameState = {
@@ -34,8 +36,12 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click handlers to all score boxes
     initializeScoreBoxHandlers();
 
-    // Load saved state if available
-    loadGameState();
+    // Load saved state if available, otherwise generate new game
+    const hasSavedState = loadGameState();
+    if (!hasSavedState) {
+        // Generate initial game with all expansions
+        generateNewGame();
+    }
 });
 
 // Initialize players based on count
@@ -44,7 +50,7 @@ function initializePlayers(count) {
     for (let i = 0; i < count; i++) {
         gameState.players.push({
             id: i,
-            name: `Player ${i + 1}`,
+            name: DEFAULT_PLAYER_NAMES[i] || `Player ${i + 1}`,
             color: DEFAULT_PLAYER_COLORS[i],
             scores: [null, null, null, null] // Round 1-4 scores
         });
@@ -487,6 +493,9 @@ function toggleScoringMode() {
     const blueTracks = goalCard.querySelectorAll('.blue-track');
     const greenTracks = goalCard.querySelectorAll('.green-track');
 
+    // Clear all cube placements when switching modes
+    clearAllCubes(true);
+
     if (currentMode === 'blue') {
         // Switch to green
         currentMode = 'green';
@@ -509,7 +518,7 @@ function toggleScoringMode() {
         greenTracks.forEach(track => track.style.display = 'none');
     }
 
-    // Re-render cubes in visible boxes
+    // Re-render cubes in visible boxes (will be empty after clear)
     renderAllCubes();
 }
 
@@ -551,9 +560,11 @@ function loadGameState() {
                 renderPlayerList();
                 renderScoreTable();
                 renderAllCubes();
+                return true; // Successfully loaded saved state
             }
         }
     } catch (e) {
         console.error('Failed to load game state:', e);
     }
+    return false; // No saved state found
 }

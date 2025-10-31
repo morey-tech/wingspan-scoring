@@ -5,7 +5,7 @@ type Goal struct {
 	ID          string `json:"id"`
 	Name        string `json:"name"`
 	Description string `json:"description"`
-	Expansion   string `json:"expansion"` // "base", "european", "oceania", "asia"
+	Expansion   string `json:"expansion"` // "base", "european", "oceania"
 }
 
 // All base game goals (8 tiles, 16 goals total)
@@ -228,18 +228,6 @@ var OceaniaGoals = []Goal{
 		ID:          "oc-birds-low-value",
 		Name:        "Birds Worth ≤ 3 Points",
 		Description: "Count the total number of birds worth 3 or fewer victory points",
-		Expansion:   "oceania",
-	},
-	{
-		ID:          "oc-nectar",
-		Name:        "Nectar Tokens",
-		Description: "Count the total number of nectar tokens in your personal supply",
-		Expansion:   "oceania",
-	},
-	{
-		ID:          "oc-total-cards",
-		Name:        "Total Cards on Birds",
-		Description: "Count the total number of cards tucked behind your birds",
 		Expansion:   "oceania",
 	},
 }
