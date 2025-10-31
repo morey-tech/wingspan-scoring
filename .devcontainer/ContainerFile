@@ -1,0 +1,3 @@
+FROM redhat/ubi10:10.0-1760519443
+
+RUN apt-get update && apt-get install -y golang-go

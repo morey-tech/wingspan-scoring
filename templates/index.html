@@ -1,0 +1,171 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wingspan - Round End Goals</title>
+    <link rel="stylesheet" href="/static/css/styles.css">
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Wingspan Round End Goals</h1>
+            <div class="controls">
+                <div class="expansion-controls">
+                    <label><input type="checkbox" id="base" checked> Base Game</label>
+                    <label><input type="checkbox" id="european"> European</label>
+                    <label><input type="checkbox" id="oceania"> Oceania</label>
+                </div>
+                <button id="newGame" class="btn-primary">New Game</button>
+                <button id="toggleMode" class="btn-secondary">Switch to Green Side</button>
+            </div>
+        </header>
+
+        <div class="player-setup">
+            <label>
+                Number of Players:
+                <select id="numPlayers">
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="3">3</option>
+                    <option value="4" selected>4</option>
+                    <option value="5">5</option>
+                </select>
+            </label>
+        </div>
+
+        <div class="goal-card blue-side" id="goalCard">
+            <!-- Round 1 -->
+            <div class="round-row">
+                <div class="round-label">
+                    <span class="round-number">ROUND 1</span>
+                </div>
+                <div class="goal-info">
+                    <h3 class="goal-name">{{.Goals.Round1.Name}}</h3>
+                    <p class="goal-description">{{.Goals.Round1.Description}}</p>
+                </div>
+                <div class="scoring-track blue-track">
+                    <div class="track-label">(1) EACH</div>
+                    <div class="score-boxes">
+                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
+                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
+                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
+                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
+                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+                <div class="scoring-track green-track" style="display: none;">
+                    <div class="track-label">MOST</div>
+                    <div class="score-boxes">
+                        <div class="score-box green-first" data-score="4"><span class="score-value">4</span><span class="place-label">1ST PLACE</span></div>
+                        <div class="score-box green-second" data-score="1"><span class="score-value">1</span><span class="place-label">2ND PLACE</span></div>
+                        <div class="score-box green-third" data-score="0"><span class="score-value">0</span><span class="place-label">3RD PLACE</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Round 2 -->
+            <div class="round-row">
+                <div class="round-label">
+                    <span class="round-number">ROUND 2</span>
+                </div>
+                <div class="goal-info">
+                    <h3 class="goal-name">{{.Goals.Round2.Name}}</h3>
+                    <p class="goal-description">{{.Goals.Round2.Description}}</p>
+                </div>
+                <div class="scoring-track blue-track">
+                    <div class="track-label">(1) EACH</div>
+                    <div class="score-boxes">
+                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
+                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
+                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
+                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
+                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+                <div class="scoring-track green-track" style="display: none;">
+                    <div class="track-label">MOST</div>
+                    <div class="score-boxes">
+                        <div class="score-box green-first" data-score="5"><span class="score-value">5</span><span class="place-label">1ST PLACE</span></div>
+                        <div class="score-box green-second" data-score="2"><span class="score-value">2</span><span class="place-label">2ND PLACE</span></div>
+                        <div class="score-box green-third" data-score="0"><span class="score-value">0</span><span class="place-label">3RD PLACE</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Round 3 -->
+            <div class="round-row">
+                <div class="round-label">
+                    <span class="round-number">ROUND 3</span>
+                </div>
+                <div class="goal-info">
+                    <h3 class="goal-name">{{.Goals.Round3.Name}}</h3>
+                    <p class="goal-description">{{.Goals.Round3.Description}}</p>
+                </div>
+                <div class="scoring-track blue-track">
+                    <div class="track-label">(1) EACH</div>
+                    <div class="score-boxes">
+                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
+                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
+                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
+                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
+                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+                <div class="scoring-track green-track" style="display: none;">
+                    <div class="track-label">MOST</div>
+                    <div class="score-boxes">
+                        <div class="score-box green-first" data-score="6"><span class="score-value">6</span><span class="place-label">1ST PLACE</span></div>
+                        <div class="score-box green-second" data-score="3"><span class="score-value">3</span><span class="place-label">2ND PLACE</span></div>
+                        <div class="score-box green-third" data-score="2"><span class="score-value">2</span><span class="place-label">3RD PLACE</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Round 4 -->
+            <div class="round-row">
+                <div class="round-label">
+                    <span class="round-number">ROUND 4</span>
+                </div>
+                <div class="goal-info">
+                    <h3 class="goal-name">{{.Goals.Round4.Name}}</h3>
+                    <p class="goal-description">{{.Goals.Round4.Description}}</p>
+                </div>
+                <div class="scoring-track blue-track">
+                    <div class="track-label">(1) EACH</div>
+                    <div class="score-boxes">
+                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
+                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
+                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
+                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
+                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+                <div class="scoring-track green-track" style="display: none;">
+                    <div class="track-label">MOST</div>
+                    <div class="score-boxes">
+                        <div class="score-box green-first" data-score="7"><span class="score-value">7</span><span class="place-label">1ST PLACE</span></div>
+                        <div class="score-box green-second" data-score="4"><span class="score-value">4</span><span class="place-label">2ND PLACE</span></div>
+                        <div class="score-box green-third" data-score="2"><span class="score-value">2</span><span class="place-label">3RD PLACE</span></div>
+                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p>Wingspan board game by Elizabeth Hargrave, published by Stonemaier Games</p>
+            <p>This is an unofficial fan-made tool</p>
+        </footer>
+    </div>
+
+    <script src="/static/js/app.js"></script>
+</body>
+</html>

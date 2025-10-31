@@ -1,0 +1,350 @@
+* {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+body {
+    font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    min-height: 100vh;
+    padding: 20px;
+}
+
+.container {
+    max-width: 1200px;
+    margin: 0 auto;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 30px;
+    color: white;
+}
+
+header h1 {
+    font-size: 2.5em;
+    margin-bottom: 20px;
+    text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+}
+
+.controls {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 20px;
+    flex-wrap: wrap;
+    margin-top: 20px;
+}
+
+.expansion-controls {
+    display: flex;
+    gap: 15px;
+    background: rgba(255, 255, 255, 0.2);
+    padding: 10px 20px;
+    border-radius: 8px;
+}
+
+.expansion-controls label {
+    color: white;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.expansion-controls input[type="checkbox"] {
+    margin-right: 5px;
+    cursor: pointer;
+}
+
+.player-setup {
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+.player-setup label {
+    color: white;
+    font-size: 1.1em;
+    font-weight: 500;
+}
+
+.player-setup select {
+    margin-left: 10px;
+    padding: 5px 15px;
+    border-radius: 5px;
+    border: none;
+    font-size: 1em;
+    cursor: pointer;
+}
+
+.btn-primary, .btn-secondary {
+    padding: 12px 30px;
+    font-size: 1.1em;
+    font-weight: 600;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.2);
+}
+
+.btn-primary {
+    background: #4CAF50;
+    color: white;
+}
+
+.btn-primary:hover {
+    background: #45a049;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+.btn-secondary {
+    background: #2196F3;
+    color: white;
+}
+
+.btn-secondary:hover {
+    background: #0b7dda;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Goal Card Styling */
+.goal-card {
+    background: #C9B896; /* Tan/beige background matching the card */
+    border-radius: 15px;
+    padding: 30px;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    border: 3px solid #8B7355;
+}
+
+.goal-card.green-side {
+    background: #C9B896;
+}
+
+.round-row {
+    display: grid;
+    grid-template-columns: 100px 1fr 450px;
+    gap: 20px;
+    align-items: center;
+    padding: 20px 0;
+    border-bottom: 2px solid #8B7355;
+}
+
+.round-row:last-child {
+    border-bottom: none;
+}
+
+.round-label {
+    text-align: center;
+}
+
+.round-number {
+    writing-mode: vertical-rl;
+    transform: rotate(180deg);
+    font-weight: 700;
+    font-size: 1.3em;
+    letter-spacing: 2px;
+    color: #3E3020;
+}
+
+.goal-info {
+    padding: 10px;
+}
+
+.goal-name {
+    font-size: 1.4em;
+    font-weight: 700;
+    color: #3E3020;
+    margin-bottom: 8px;
+}
+
+.goal-description {
+    font-size: 0.95em;
+    color: #5A4A3A;
+    line-height: 1.4;
+}
+
+/* Blue Side Scoring Track */
+.scoring-track {
+    position: relative;
+}
+
+.track-label {
+    position: absolute;
+    left: -40px;
+    top: 50%;
+    transform: translateY(-50%) rotate(-90deg);
+    font-weight: 700;
+    font-size: 0.9em;
+    color: #3E3020;
+    white-space: nowrap;
+}
+
+.blue-track .score-boxes {
+    display: flex;
+    gap: 3px;
+    background: #5B9AA0; /* Blue-green track color */
+    padding: 8px;
+    border-radius: 8px;
+    border: 2px solid #4A7B7F;
+}
+
+.blue-track .score-box {
+    flex: 1;
+    background: #7BB5BB;
+    border: 2px solid #4A7B7F;
+    border-radius: 6px;
+    padding: 15px 8px;
+    text-align: center;
+    position: relative;
+    min-width: 65px;
+}
+
+.blue-track .score-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #2C3E3F;
+}
+
+.max-label {
+    display: block;
+    font-size: 0.75em;
+    font-weight: 600;
+    color: #2C3E3F;
+    margin-top: 2px;
+}
+
+/* Green Side Scoring Track */
+.green-track .score-boxes {
+    display: flex;
+    gap: 3px;
+    background: #8B9556; /* Olive green track color */
+    padding: 8px;
+    border-radius: 8px;
+    border: 2px solid #6B7446;
+}
+
+.green-track .score-box {
+    flex: 1;
+    background: #A5AD7A;
+    border: 2px solid #6B7446;
+    border-radius: 6px;
+    padding: 12px 8px;
+    text-align: center;
+    position: relative;
+    min-width: 100px;
+}
+
+.green-track .score-value {
+    display: block;
+    font-size: 1.8em;
+    font-weight: 700;
+    color: #2C3E20;
+}
+
+.place-label {
+    display: block;
+    font-size: 0.7em;
+    font-weight: 600;
+    color: #2C3E20;
+    margin-top: 2px;
+    text-transform: uppercase;
+}
+
+.green-first {
+    background: #B5C380 !important;
+}
+
+.green-second {
+    background: #A5AD7A !important;
+}
+
+.green-third {
+    background: #95987A !important;
+}
+
+/* Footer */
+footer {
+    text-align: center;
+    margin-top: 40px;
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.9em;
+}
+
+footer p {
+    margin: 5px 0;
+}
+
+/* Responsive Design */
+@media (max-width: 1024px) {
+    .round-row {
+        grid-template-columns: 80px 1fr 400px;
+        gap: 15px;
+    }
+
+    .blue-track .score-box,
+    .green-track .score-box {
+        min-width: 55px;
+        padding: 12px 5px;
+    }
+}
+
+@media (max-width: 768px) {
+    .round-row {
+        grid-template-columns: 1fr;
+        gap: 15px;
+    }
+
+    .round-label {
+        text-align: left;
+    }
+
+    .round-number {
+        writing-mode: horizontal-tb;
+        transform: none;
+    }
+
+    .track-label {
+        position: static;
+        transform: none;
+        margin-bottom: 5px;
+        text-align: left;
+    }
+
+    header h1 {
+        font-size: 2em;
+    }
+
+    .controls {
+        flex-direction: column;
+    }
+
+    .blue-track .score-boxes,
+    .green-track .score-boxes {
+        flex-wrap: wrap;
+    }
+
+    .blue-track .score-box,
+    .green-track .score-box {
+        min-width: 45px;
+    }
+}
+
+/* Print Styles */
+@media print {
+    body {
+        background: white;
+        padding: 0;
+    }
+
+    header, .controls, .player-setup, footer {
+        display: none;
+    }
+
+    .goal-card {
+        box-shadow: none;
+        page-break-inside: avoid;
+    }
+}
