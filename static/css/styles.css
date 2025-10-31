@@ -120,12 +120,6 @@ header h1 {
     border-color: #667eea;
 }
 
-.player-color-label {
-    color: #666;
-    font-size: 0.9em;
-    min-width: 70px;
-}
-
 .player-color-select {
     padding: 8px 12px;
     border: 2px solid #ddd;

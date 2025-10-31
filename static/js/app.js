@@ -71,7 +71,6 @@ function renderPlayerList() {
                 data-player-id="${player.id}"
                 placeholder="Player ${index + 1}"
             />
-            <span class="player-color-label">${PLAYER_COLOR_NAMES[PLAYER_COLORS.indexOf(player.color)]}</span>
         `;
         playerList.appendChild(playerDiv);
 
