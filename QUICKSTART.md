@@ -43,22 +43,36 @@ To stop: `docker-compose down`
 
 ## Using the App
 
-1. **Select Expansions**
+1. **Setup Players**
+   - Select number of players (2-5)
+   - Edit player names (optional)
+   - Each player is assigned a cube color: Blue, Purple, Green, Red, or Yellow
+
+2. **Select Expansions**
    - Check/uncheck boxes for Base Game, European, and Oceania expansions
    - At least one expansion must be selected
 
-2. **Generate New Game**
+3. **Generate New Game**
    - Click "New Game" button to randomly select 4 goals
    - Goals will be displayed for rounds 1-4
 
-3. **Toggle Scoring Mode**
+4. **Toggle Scoring Mode**
    - Click "Switch to Green/Blue Side" to change scoring systems
    - **Blue Side**: 1 point per item, max 5 points (beginner-friendly)
    - **Green Side**: Competitive ranking (1st/2nd/3rd place)
 
-4. **View Goals**
-   - Each round shows the goal name and description
-   - Scoring tracks match the physical game card
+5. **Track Scores During Play**
+   - Play your physical Wingspan game
+   - After each round, click score boxes to place player cubes
+   - Click a box to open player selection menu
+   - Select which player(s) scored in that box
+   - Cubes can be placed in the same box for ties
+   - Score tracker table updates automatically
+
+6. **View Final Results**
+   - Score tracker shows running totals
+   - Winner is highlighted in yellow
+   - Print the card and score tracker for your records
 
 ## Scoring Reference
 

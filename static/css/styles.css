@@ -6,7 +6,7 @@
 
 body {
     font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    background: linear-gradient(135deg, #B8DFE6 0%, #A8D5E2 100%);
     min-height: 100vh;
     padding: 20px;
 }
@@ -57,12 +57,25 @@ header h1 {
 }
 
 .player-setup {
-    text-align: center;
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 25px;
+    margin-bottom: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.player-setup h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.player-config {
     margin-bottom: 20px;
 }
 
-.player-setup label {
-    color: white;
+.player-config label {
+    color: #333;
     font-size: 1.1em;
     font-weight: 500;
 }
@@ -74,6 +87,63 @@ header h1 {
     border: none;
     font-size: 1em;
     cursor: pointer;
+}
+
+.player-list {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.player-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    background: white;
+    padding: 12px 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.player-name-input {
+    flex: 1;
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    transition: border-color 0.3s;
+}
+
+.player-name-input:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.player-color-label {
+    color: #666;
+    font-size: 0.9em;
+    min-width: 70px;
+}
+
+.player-color-select {
+    padding: 8px 12px;
+    border: 2px solid #ddd;
+    border-radius: 6px;
+    font-size: 1em;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.3s;
+    min-width: 100px;
+}
+
+.player-color-select:focus {
+    outline: none;
+    border-color: #667eea;
+}
+
+.player-color-select:hover {
+    border-color: #999;
 }
 
 .btn-primary, .btn-secondary {
@@ -88,12 +158,12 @@ header h1 {
 }
 
 .btn-primary {
-    background: #4CAF50;
+    background: #FF9800;
     color: white;
 }
 
 .btn-primary:hover {
-    background: #45a049;
+    background: #F57C00;
     transform: translateY(-2px);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
 }
@@ -107,6 +177,15 @@ header h1 {
     background: #0b7dda;
     transform: translateY(-2px);
     box-shadow: 0 6px 8px rgba(0, 0, 0, 0.3);
+}
+
+/* Toggle button states for blue/green modes */
+#toggleMode.green-mode {
+    background: #4CAF50;
+}
+
+#toggleMode.green-mode:hover {
+    background: #45a049;
 }
 
 /* Goal Card Styling */
@@ -332,6 +411,329 @@ footer p {
     }
 }
 
+/* Player Cubes */
+.player-cube {
+    width: 24px;
+    height: 24px;
+    border-radius: 4px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.player-cube.clickable-cube {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.player-cube.clickable-cube:hover {
+    transform: scale(1.2);
+    box-shadow: 0 3px 8px rgba(0, 0, 0, 0.3);
+    border-width: 3px;
+}
+
+.player-cube.blue {
+    background: #2196F3;
+}
+
+.player-cube.purple {
+    background: #9C27B0;
+}
+
+.player-cube.green {
+    background: #4CAF50;
+}
+
+.player-cube.red {
+    background: #F44336;
+}
+
+.player-cube.yellow {
+    background: #FFC107;
+}
+
+/* Placed Cubes in Score Boxes */
+.score-box {
+    cursor: pointer;
+    transition: all 0.2s ease;
+    position: relative;
+}
+
+.score-box:hover {
+    transform: scale(1.05);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.cube-container {
+    display: flex;
+    gap: 3px;
+    justify-content: center;
+    margin-top: 5px;
+    min-height: 18px;
+}
+
+.placed-cube {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 1.5px solid rgba(0, 0, 0, 0.3);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.2);
+    animation: popIn 0.2s ease;
+}
+
+@keyframes popIn {
+    0% {
+        transform: scale(0);
+    }
+    50% {
+        transform: scale(1.2);
+    }
+    100% {
+        transform: scale(1);
+    }
+}
+
+.placed-cube.blue {
+    background: #2196F3;
+}
+
+.placed-cube.purple {
+    background: #9C27B0;
+}
+
+.placed-cube.green {
+    background: #4CAF50;
+}
+
+.placed-cube.red {
+    background: #F44336;
+}
+
+.placed-cube.yellow {
+    background: #FFC107;
+}
+
+/* Player Selection Menu */
+.player-menu {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    z-index: 1000;
+    min-width: 220px;
+    animation: slideDown 0.2s ease;
+}
+
+@keyframes slideDown {
+    from {
+        opacity: 0;
+        transform: translateY(-10px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.player-menu-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.player-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.player-menu-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.player-menu-item:hover {
+    background: #f0f0f0;
+}
+
+.player-menu-item.selected {
+    background: #e3f2fd;
+    border-color: #2196F3;
+}
+
+.player-menu-item span {
+    flex: 1;
+}
+
+.checkmark {
+    color: #4CAF50;
+    font-weight: bold;
+    font-size: 1.2em;
+}
+
+.player-menu-actions {
+    display: flex;
+    gap: 8px;
+}
+
+.menu-btn {
+    flex: 1;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.menu-btn-close {
+    background: #ddd;
+    color: #333;
+}
+
+.menu-btn-close:hover {
+    background: #ccc;
+}
+
+/* Color Picker Menu */
+.color-picker-menu {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    z-index: 1000;
+    min-width: 200px;
+    animation: slideDown 0.2s ease;
+}
+
+.color-picker-header {
+    font-weight: 600;
+    margin-bottom: 10px;
+    color: #333;
+    font-size: 1.1em;
+}
+
+.color-picker-items {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.color-picker-item {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.color-picker-item:hover:not(.disabled) {
+    background: #f0f0f0;
+}
+
+.color-picker-item.selected {
+    background: #e8f5e9;
+    border-color: #4CAF50;
+}
+
+.color-picker-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.color-picker-item span {
+    flex: 1;
+}
+
+/* Score Tracker */
+.score-tracker {
+    background: rgba(255, 255, 255, 0.95);
+    border-radius: 12px;
+    padding: 25px;
+    margin-top: 30px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+}
+
+.score-tracker h2 {
+    color: #333;
+    margin-bottom: 20px;
+    font-size: 1.5em;
+}
+
+.score-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-bottom: 20px;
+    background: white;
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+.score-table thead {
+    background: #667eea;
+    color: white;
+}
+
+.score-table th,
+.score-table td {
+    padding: 12px 15px;
+    text-align: center;
+}
+
+.score-table th {
+    font-weight: 600;
+    font-size: 1em;
+}
+
+.score-table tbody tr {
+    border-bottom: 1px solid #eee;
+    transition: background 0.2s;
+}
+
+.score-table tbody tr:hover {
+    background: #f5f5f5;
+}
+
+.score-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.player-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    justify-content: flex-start;
+}
+
+.total-score {
+    background: #f0f0f0;
+    font-size: 1.1em;
+}
+
+.winning-player {
+    background: #fff9c4 !important;
+}
+
+.winning-player:hover {
+    background: #fff59d !important;
+}
+
+.winning-player .total-score {
+    background: #ffeb3b;
+    color: #f57f17;
+}
+
 /* Print Styles */
 @media print {
     body {
@@ -346,5 +748,13 @@ footer p {
     .goal-card {
         box-shadow: none;
         page-break-inside: avoid;
+    }
+
+    .score-tracker {
+        page-break-before: always;
+    }
+
+    .player-menu {
+        display: none;
     }
 }

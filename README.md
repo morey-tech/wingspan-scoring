@@ -9,9 +9,25 @@ A web application that randomly selects round end goals for the Wingspan board g
 - **Dual Scoring Modes**:
   - **Blue Side** (Beginner-friendly): Linear scoring, 1 point per item, maximum 5 points
   - **Green Side** (Competitive): Ranking-based scoring with 1st, 2nd, and 3rd place points
+- **Interactive Score Tracking**:
+  - Click score boxes to place colored player cubes
+  - Cube colors: Blue, Purple, Green, Red, Yellow
+  - Automatic score calculation and running totals
+  - Visual winner highlighting
+  - Support for ties (multiple cubes in same box)
+- **Player Management**:
+  - Configure 2-5 players with custom names
+  - Each player assigned a unique cube color
+  - Player list with editable names
+- **Score Tracker Table**:
+  - Running scores across all 4 rounds
+  - Automatic total calculation
+  - Winner highlighting
+  - Clear all cubes button
+- **Session Persistence**: Game state saved to browser localStorage
 - **Visual Fidelity**: Card design that closely matches the physical game card
 - **Responsive Design**: Works on desktop, tablet, and mobile devices
-- **Print-Friendly**: Optimized CSS for printing the goal card
+- **Print-Friendly**: Optimized CSS for printing the goal card and score tracker
 
 ## Game Information
 

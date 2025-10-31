@@ -22,16 +22,21 @@
         </header>
 
         <div class="player-setup">
-            <label>
-                Number of Players:
-                <select id="numPlayers">
-                    <option value="1">1</option>
-                    <option value="2">2</option>
-                    <option value="3">3</option>
-                    <option value="4" selected>4</option>
-                    <option value="5">5</option>
-                </select>
-            </label>
+            <h2>Player Setup</h2>
+            <div class="player-config">
+                <label>
+                    Number of Players:
+                    <select id="numPlayers">
+                        <option value="2" selected>2</option>
+                        <option value="3">3</option>
+                        <option value="4">4</option>
+                        <option value="5">5</option>
+                    </select>
+                </label>
+            </div>
+            <div id="playerList" class="player-list">
+                <!-- Players will be dynamically generated here -->
+            </div>
         </div>
 
         <div class="goal-card blue-side" id="goalCard">
@@ -47,21 +52,21 @@
                 <div class="scoring-track blue-track">
                     <div class="track-label">(1) EACH</div>
                     <div class="score-boxes">
-                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
-                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
-                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
-                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
-                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box" data-round="1" data-score="5" data-position="5"><span class="score-value">5</span><span class="max-label">MAX</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="1" data-score="4" data-position="4"><span class="score-value">4</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="1" data-score="3" data-position="3"><span class="score-value">3</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="1" data-score="2" data-position="2"><span class="score-value">2</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="1" data-score="1" data-position="1"><span class="score-value">1</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="1" data-score="0" data-position="0"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
                 <div class="scoring-track green-track" style="display: none;">
                     <div class="track-label">MOST</div>
                     <div class="score-boxes">
-                        <div class="score-box green-first" data-score="4"><span class="score-value">4</span><span class="place-label">1ST PLACE</span></div>
-                        <div class="score-box green-second" data-score="1"><span class="score-value">1</span><span class="place-label">2ND PLACE</span></div>
-                        <div class="score-box green-third" data-score="0"><span class="score-value">0</span><span class="place-label">3RD PLACE</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box green-first" data-round="1" data-score="4" data-position="1st"><span class="score-value">4</span><span class="place-label">1ST PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-second" data-round="1" data-score="1" data-position="2nd"><span class="score-value">1</span><span class="place-label">2ND PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-third" data-round="1" data-score="0" data-position="3rd"><span class="score-value">0</span><span class="place-label">3RD PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="1" data-score="0" data-position="other"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
             </div>
@@ -78,21 +83,21 @@
                 <div class="scoring-track blue-track">
                     <div class="track-label">(1) EACH</div>
                     <div class="score-boxes">
-                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
-                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
-                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
-                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
-                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box" data-round="2" data-score="5" data-position="5"><span class="score-value">5</span><span class="max-label">MAX</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="2" data-score="4" data-position="4"><span class="score-value">4</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="2" data-score="3" data-position="3"><span class="score-value">3</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="2" data-score="2" data-position="2"><span class="score-value">2</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="2" data-score="1" data-position="1"><span class="score-value">1</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="2" data-score="0" data-position="0"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
                 <div class="scoring-track green-track" style="display: none;">
                     <div class="track-label">MOST</div>
                     <div class="score-boxes">
-                        <div class="score-box green-first" data-score="5"><span class="score-value">5</span><span class="place-label">1ST PLACE</span></div>
-                        <div class="score-box green-second" data-score="2"><span class="score-value">2</span><span class="place-label">2ND PLACE</span></div>
-                        <div class="score-box green-third" data-score="0"><span class="score-value">0</span><span class="place-label">3RD PLACE</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box green-first" data-round="2" data-score="5" data-position="1st"><span class="score-value">5</span><span class="place-label">1ST PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-second" data-round="2" data-score="2" data-position="2nd"><span class="score-value">2</span><span class="place-label">2ND PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-third" data-round="2" data-score="0" data-position="3rd"><span class="score-value">0</span><span class="place-label">3RD PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="2" data-score="0" data-position="other"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
             </div>
@@ -109,21 +114,21 @@
                 <div class="scoring-track blue-track">
                     <div class="track-label">(1) EACH</div>
                     <div class="score-boxes">
-                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
-                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
-                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
-                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
-                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box" data-round="3" data-score="5" data-position="5"><span class="score-value">5</span><span class="max-label">MAX</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="3" data-score="4" data-position="4"><span class="score-value">4</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="3" data-score="3" data-position="3"><span class="score-value">3</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="3" data-score="2" data-position="2"><span class="score-value">2</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="3" data-score="1" data-position="1"><span class="score-value">1</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="3" data-score="0" data-position="0"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
                 <div class="scoring-track green-track" style="display: none;">
                     <div class="track-label">MOST</div>
                     <div class="score-boxes">
-                        <div class="score-box green-first" data-score="6"><span class="score-value">6</span><span class="place-label">1ST PLACE</span></div>
-                        <div class="score-box green-second" data-score="3"><span class="score-value">3</span><span class="place-label">2ND PLACE</span></div>
-                        <div class="score-box green-third" data-score="2"><span class="score-value">2</span><span class="place-label">3RD PLACE</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box green-first" data-round="3" data-score="6" data-position="1st"><span class="score-value">6</span><span class="place-label">1ST PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-second" data-round="3" data-score="3" data-position="2nd"><span class="score-value">3</span><span class="place-label">2ND PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-third" data-round="3" data-score="2" data-position="3rd"><span class="score-value">2</span><span class="place-label">3RD PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="3" data-score="0" data-position="other"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
             </div>
@@ -140,24 +145,45 @@
                 <div class="scoring-track blue-track">
                     <div class="track-label">(1) EACH</div>
                     <div class="score-boxes">
-                        <div class="score-box" data-score="5"><span class="score-value">5</span><span class="max-label">MAX</span></div>
-                        <div class="score-box" data-score="4"><span class="score-value">4</span></div>
-                        <div class="score-box" data-score="3"><span class="score-value">3</span></div>
-                        <div class="score-box" data-score="2"><span class="score-value">2</span></div>
-                        <div class="score-box" data-score="1"><span class="score-value">1</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box" data-round="4" data-score="5" data-position="5"><span class="score-value">5</span><span class="max-label">MAX</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="4" data-score="4" data-position="4"><span class="score-value">4</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="4" data-score="3" data-position="3"><span class="score-value">3</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="4" data-score="2" data-position="2"><span class="score-value">2</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="4" data-score="1" data-position="1"><span class="score-value">1</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="4" data-score="0" data-position="0"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
                 <div class="scoring-track green-track" style="display: none;">
                     <div class="track-label">MOST</div>
                     <div class="score-boxes">
-                        <div class="score-box green-first" data-score="7"><span class="score-value">7</span><span class="place-label">1ST PLACE</span></div>
-                        <div class="score-box green-second" data-score="4"><span class="score-value">4</span><span class="place-label">2ND PLACE</span></div>
-                        <div class="score-box green-third" data-score="2"><span class="score-value">2</span><span class="place-label">3RD PLACE</span></div>
-                        <div class="score-box" data-score="0"><span class="score-value">0</span></div>
+                        <div class="score-box green-first" data-round="4" data-score="7" data-position="1st"><span class="score-value">7</span><span class="place-label">1ST PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-second" data-round="4" data-score="4" data-position="2nd"><span class="score-value">4</span><span class="place-label">2ND PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box green-third" data-round="4" data-score="2" data-position="3rd"><span class="score-value">2</span><span class="place-label">3RD PLACE</span><div class="cube-container"></div></div>
+                        <div class="score-box" data-round="4" data-score="0" data-position="other"><span class="score-value">0</span><div class="cube-container"></div></div>
                     </div>
                 </div>
             </div>
+        </div>
+
+        <!-- Score Tracker -->
+        <div class="score-tracker" id="scoreTracker">
+            <h2>Score Tracker</h2>
+            <table class="score-table">
+                <thead>
+                    <tr>
+                        <th>Player</th>
+                        <th>R1</th>
+                        <th>R2</th>
+                        <th>R3</th>
+                        <th>R4</th>
+                        <th>Total</th>
+                    </tr>
+                </thead>
+                <tbody id="scoreTableBody">
+                    <!-- Player scores will be dynamically generated here -->
+                </tbody>
+            </table>
+            <button id="clearScores" class="btn-secondary">Clear All Cubes</button>
         </div>
 
         <footer>
