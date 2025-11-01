@@ -25,6 +25,9 @@ func Initialize() error {
 		return fmt.Errorf("failed to create database directory: %w", err)
 	}
 
+	// Print the database path
+	fmt.Println("Database path:", dbPath)
+
 	// Open database connection
 	var err error
 	DB, err = sql.Open("sqlite", dbPath)
