@@ -12,7 +12,8 @@ let gameState = {
     includeOceania: true,
     players: [], // Will store player names and colors from goals page
     playerNames: [],
-    playerColors: []
+    playerColors: [],
+    roundGoalScores: [] // Total round goal scores from goals page
 };
 
 // Initialize on page load
@@ -77,6 +78,7 @@ function generatePlayerRows() {
         // Get player name and color from goals page data if available
         const playerName = (gameState.playerNames && gameState.playerNames[i-1]) || `Player ${i}`;
         const playerColor = (gameState.playerColors && gameState.playerColors[i-1]) || PLAYER_COLORS[(i-1) % PLAYER_COLORS.length];
+        const roundGoalScore = (gameState.roundGoalScores && gameState.roundGoalScores[i-1]) || 0;
 
         row.innerHTML = `
             <td class="player-name-cell">
@@ -110,7 +112,7 @@ function generatePlayerRows() {
                 <input type="number"
                        class="score-input"
                        min="0"
-                       value="0"
+                       value="${roundGoalScore}"
                        data-player="${i}"
                        data-field="roundGoals">
             </td>
@@ -440,15 +442,46 @@ function loadPlayersFromGoalsPage() {
                 gameState.playerNames = data.players.map(p => p.name || `Player ${p.id + 1}`);
                 gameState.playerColors = data.players.map(p => p.color || PLAYER_COLORS[p.id]);
 
+                // Calculate round goal scores for each player
+                gameState.roundGoalScores = calculateRoundGoalScores(data.players, data.cubePlacements || {});
+
                 // Update UI
                 document.getElementById('numPlayers').value = gameState.numPlayers;
 
                 console.log(`Loaded ${gameState.numPlayers} players from goals page:`, gameState.playerNames);
+                console.log('Round goal scores:', gameState.roundGoalScores);
             }
         }
     } catch (error) {
         console.error('Error loading players from goals page:', error);
     }
+}
+
+// Calculate total round goal scores for each player from cube placements
+function calculateRoundGoalScores(players, cubePlacements) {
+    const scores = players.map(player => {
+        let totalScore = 0;
+
+        // For each round (1-4), find the score for this player's color
+        for (let round = 1; round <= 4; round++) {
+            // Check all cube placement keys for this round
+            for (const [key, colors] of Object.entries(cubePlacements)) {
+                const parts = key.split('-');
+                const r = parseInt(parts[0]);
+                const score = parseInt(parts[1]);
+
+                // If this key is for the current round and contains this player's color
+                if (r === round && colors && colors.includes(player.color)) {
+                    totalScore += score;
+                    break; // Found score for this round, move to next round
+                }
+            }
+        }
+
+        return totalScore;
+    });
+
+    return scores;
 }
 
 // Apply saved state to inputs
@@ -458,6 +491,11 @@ function applySavedState() {
         if (playerNum > gameState.numPlayers) return;
 
         Object.keys(playerData).forEach(field => {
+            // Skip roundGoals if we have data from the goals page
+            if (field === 'roundGoals' && gameState.roundGoalScores && gameState.roundGoalScores.length > 0) {
+                return; // Don't overwrite round goals from goals page
+            }
+
             const input = document.querySelector(`input[data-player="${playerNum}"][data-field="${field}"]`);
             if (input) {
                 input.value = playerData[field];
