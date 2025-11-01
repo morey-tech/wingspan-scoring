@@ -7,6 +7,7 @@ import (
 	"log"
 	"net/http"
 	"strconv"
+	"wingspan-goals/db"
 	"wingspan-goals/goals"
 	"wingspan-goals/scoring"
 )
@@ -34,6 +35,13 @@ type PageData struct {
 }
 
 func main() {
+	// Initialize database
+	if err := db.Initialize(); err != nil {
+		log.Fatal("Failed to initialize database:", err)
+	}
+	defer db.Close()
+	log.Println("Database initialized successfully")
+
 	// Serve static files
 	fs := http.FileServer(http.FS(content))
 	http.Handle("/static/", fs)
@@ -41,10 +49,14 @@ func main() {
 	// Routes
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/final-score", handleFinalScore)
+	http.HandleFunc("/history", handleHistory)
 	http.HandleFunc("/api/new-game", handleNewGame)
 	http.HandleFunc("/api/goals", handleGetGoals)
 	http.HandleFunc("/api/calculate-scores", handleCalculateScores)
 	http.HandleFunc("/api/calculate-final-score", handleCalculateFinalScore)
+	http.HandleFunc("/api/games", handleGetGames)
+	http.HandleFunc("/api/games/", handleGameRoute)
+	http.HandleFunc("/api/stats/", handleGetPlayerStats)
 
 	log.Println("Starting Wingspan Goals server on :8081")
 	log.Fatal(http.ListenAndServe(":8081", nil))
@@ -184,16 +196,169 @@ func handleCalculateFinalScore(w http.ResponseWriter, r *http.Request) {
 	// Calculate final scores
 	players, nectarScoring := scoring.CalculateFinalScores(request.Players, request.IncludeOceania)
 
+	// Save game result to database
+	gameID, err := db.SaveGameResult(players, nectarScoring, request.IncludeOceania)
+	if err != nil {
+		log.Printf("Failed to save game result: %v", err)
+		// Don't fail the request - just log the error
+	} else {
+		log.Printf("Saved game result with ID: %d", gameID)
+	}
+
 	response := struct {
 		Players       []scoring.PlayerFinalScore `json:"players"`
 		NectarScoring scoring.NectarScoring      `json:"nectarScoring"`
+		GameID        int64                      `json:"gameId"`
 	}{
 		Players:       players,
 		NectarScoring: nectarScoring,
+		GameID:        gameID,
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func handleHistory(w http.ResponseWriter, r *http.Request) {
+	data := PageData{
+		BaseGame:  true,
+		European:  true,
+		Oceania:   true,
+		NumPlayers: 4,
+	}
+
+	err := tmpl.ExecuteTemplate(w, "history.html", data)
+	if err != nil {
+		log.Println("Error rendering template:", err)
+		http.Error(w, "Error rendering page", http.StatusInternalServerError)
+	}
+}
+
+func handleGetGames(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse pagination parameters
+	limit := parseIntDefault(r.URL.Query().Get("limit"), 50)
+	offset := parseIntDefault(r.URL.Query().Get("offset"), 0)
+
+	// Get games from database
+	games, err := db.GetAllGameResults(limit, offset)
+	if err != nil {
+		log.Printf("Failed to get games: %v", err)
+		http.Error(w, "Failed to retrieve games", http.StatusInternalServerError)
+		return
+	}
+
+	// Get total count
+	totalCount, err := db.CountGameResults()
+	if err != nil {
+		log.Printf("Failed to count games: %v", err)
+		totalCount = 0
+	}
+
+	response := struct {
+		Games      []db.GameResult `json:"games"`
+		TotalCount int             `json:"totalCount"`
+		Limit      int             `json:"limit"`
+		Offset     int             `json:"offset"`
+	}{
+		Games:      games,
+		TotalCount: totalCount,
+		Limit:      limit,
+		Offset:     offset,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
+}
+
+func handleGameRoute(w http.ResponseWriter, r *http.Request) {
+	switch r.Method {
+	case http.MethodGet:
+		handleGetGame(w, r)
+	case http.MethodDelete:
+		handleDeleteGame(w, r)
+	default:
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+	}
+}
+
+func handleGetGame(w http.ResponseWriter, r *http.Request) {
+	// Extract ID from path
+	path := r.URL.Path
+	idStr := path[len("/api/games/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid game ID", http.StatusBadRequest)
+		return
+	}
+
+	// Get game from database
+	game, err := db.GetGameResult(id)
+	if err != nil {
+		log.Printf("Failed to get game %d: %v", id, err)
+		http.Error(w, "Game not found", http.StatusNotFound)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(game)
+}
+
+func handleDeleteGame(w http.ResponseWriter, r *http.Request) {
+	// Extract ID from path
+	path := r.URL.Path
+	idStr := path[len("/api/games/"):]
+	id, err := strconv.ParseInt(idStr, 10, 64)
+	if err != nil {
+		http.Error(w, "Invalid game ID", http.StatusBadRequest)
+		return
+	}
+
+	// Delete game from database
+	err = db.DeleteGameResult(id)
+	if err != nil {
+		log.Printf("Failed to delete game %d: %v", id, err)
+		http.Error(w, "Failed to delete game", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Deleted game with ID: %d", id)
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]interface{}{
+		"success": true,
+		"message": "Game deleted successfully",
+	})
+}
+
+func handleGetPlayerStats(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Extract player name from path
+	path := r.URL.Path
+	playerName := path[len("/api/stats/"):]
+	if playerName == "" {
+		http.Error(w, "Player name required", http.StatusBadRequest)
+		return
+	}
+
+	// Get player stats from database
+	stats, err := db.GetPlayerStats(playerName)
+	if err != nil {
+		log.Printf("Failed to get stats for player %s: %v", playerName, err)
+		http.Error(w, "Failed to retrieve player stats", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(stats)
 }
 
 // Helper to parse int with default
