@@ -58,8 +58,8 @@ func main() {
 	http.HandleFunc("/api/games/", handleGameRoute)
 	http.HandleFunc("/api/stats/", handleGetPlayerStats)
 
-	log.Println("Starting Wingspan Goals server on :8081")
-	log.Fatal(http.ListenAndServe(":8081", nil))
+	log.Println("Starting Wingspan Goals server on :8080")
+	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {

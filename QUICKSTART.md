@@ -128,7 +128,7 @@ curl -X POST "http://localhost:8080/api/calculate-scores" \
 lsof -i :8080
 
 # Kill it or use a different port
-PORT=8081 ./wingspan-goals
+PORT=8080 ./wingspan-goals
 ```
 
 **Docker build fails?**
