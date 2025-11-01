@@ -12,7 +12,8 @@ const DEFAULT_PLAYER_COLORS = ['blue', 'yellow', 'green', 'purple', 'red'];
 // Game state
 let gameState = {
     players: [],
-    cubePlacements: {} // { "round-score": ["playerColor1", "playerColor2"] }
+    cubePlacements: {}, // { "round-score": ["playerColor1", "playerColor2"] }
+    goals: null // Current round goals (will be captured from HTML or loaded from server)
 };
 
 // Initialize
@@ -36,11 +37,14 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click handlers to all score boxes
     initializeScoreBoxHandlers();
 
-    // Load saved state if available, otherwise generate new game
+    // Load saved state if available
     const hasSavedState = loadGameState();
-    if (!hasSavedState) {
-        // Generate initial game with all expansions
-        generateNewGame();
+
+    // If no saved state with goals, capture goals from server-rendered HTML
+    if (!hasSavedState || !gameState.goals) {
+        // Capture the goals that were rendered by the server
+        gameState.goals = captureGoalsFromDisplay();
+        saveGameState();
     }
 });
 
@@ -466,8 +470,33 @@ async function generateNewGame() {
     }
 }
 
-// Update the goal display with new goals
-function updateGoalDisplay(goals) {
+// Capture current goals from HTML display
+function captureGoalsFromDisplay() {
+    const rounds = ['round1', 'round2', 'round3', 'round4'];
+    const goalCard = document.getElementById('goalCard');
+    const roundRows = goalCard.querySelectorAll('.round-row');
+    const goals = {};
+
+    rounds.forEach((round, index) => {
+        const row = roundRows[index];
+        if (row) {
+            const nameElement = row.querySelector('.goal-name');
+            const descElement = row.querySelector('.goal-description');
+
+            if (nameElement && descElement) {
+                goals[round] = {
+                    name: nameElement.textContent,
+                    description: descElement.textContent
+                };
+            }
+        }
+    });
+
+    return goals;
+}
+
+// Update the goal display with new goals (internal function, doesn't save)
+function setGoalDisplay(goals) {
     const rounds = ['round1', 'round2', 'round3', 'round4'];
     const goalCard = document.getElementById('goalCard');
     const roundRows = goalCard.querySelectorAll('.round-row');
@@ -484,6 +513,13 @@ function updateGoalDisplay(goals) {
             if (descElement) descElement.textContent = goal.description;
         }
     });
+}
+
+// Update the goal display with new goals and save to state
+function updateGoalDisplay(goals) {
+    setGoalDisplay(goals);
+    gameState.goals = goals;
+    saveGameState();
 }
 
 // Toggle between blue and green scoring modes
@@ -560,6 +596,12 @@ function loadGameState() {
                 renderPlayerList();
                 renderScoreTable();
                 renderAllCubes();
+
+                // Restore goals if they exist in saved state
+                if (gameState.goals) {
+                    setGoalDisplay(gameState.goals);
+                }
+
                 return true; // Successfully loaded saved state
             }
         }

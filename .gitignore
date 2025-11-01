@@ -1,5 +1,6 @@
 # Binaries
 wingspan-goals
+wingspan-scoring
 *.exe
 *.exe~
 *.dll
