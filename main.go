@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"wingspan-goals/goals"
+	"wingspan-goals/scoring"
 )
 
 //go:embed templates static
@@ -39,12 +40,14 @@ func main() {
 
 	// Routes
 	http.HandleFunc("/", handleHome)
+	http.HandleFunc("/final-score", handleFinalScore)
 	http.HandleFunc("/api/new-game", handleNewGame)
 	http.HandleFunc("/api/goals", handleGetGoals)
 	http.HandleFunc("/api/calculate-scores", handleCalculateScores)
+	http.HandleFunc("/api/calculate-final-score", handleCalculateFinalScore)
 
-	log.Println("Starting Wingspan Goals server on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Println("Starting Wingspan Goals server on :8081")
+	log.Fatal(http.ListenAndServe(":8081", nil))
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {
@@ -144,6 +147,53 @@ func handleCalculateScores(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(scores)
+}
+
+func handleFinalScore(w http.ResponseWriter, r *http.Request) {
+	data := PageData{
+		BaseGame:  true,
+		European:  true,
+		Oceania:   true,
+		NumPlayers: 4, // Default to 4 players
+	}
+
+	err := tmpl.ExecuteTemplate(w, "final-score.html", data)
+	if err != nil {
+		log.Println("Error rendering template:", err)
+		http.Error(w, "Error rendering page", http.StatusInternalServerError)
+	}
+}
+
+func handleCalculateFinalScore(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	var request struct {
+		Players        []scoring.PlayerFinalScore `json:"players"`
+		IncludeOceania bool                       `json:"includeOceania"`
+	}
+
+	err := json.NewDecoder(r.Body).Decode(&request)
+	if err != nil {
+		http.Error(w, "Invalid request body", http.StatusBadRequest)
+		return
+	}
+
+	// Calculate final scores
+	players, nectarScoring := scoring.CalculateFinalScores(request.Players, request.IncludeOceania)
+
+	response := struct {
+		Players       []scoring.PlayerFinalScore `json:"players"`
+		NectarScoring scoring.NectarScoring      `json:"nectarScoring"`
+	}{
+		Players:       players,
+		NectarScoring: nectarScoring,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
 
 // Helper to parse int with default

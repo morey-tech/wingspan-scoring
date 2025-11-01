@@ -1,0 +1,432 @@
+/* Final Score Calculator Styles */
+
+.oceania-toggle {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 14px;
+    cursor: pointer;
+}
+
+.oceania-toggle input[type="checkbox"] {
+    cursor: pointer;
+}
+
+.scoring-instructions {
+    margin-bottom: 10px;
+    color: #666;
+    font-size: 14px;
+    text-align: center;
+}
+
+.nectar-rules {
+    margin-bottom: 20px;
+    padding: 12px 16px;
+    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
+    border-left: 4px solid #667eea;
+    border-radius: 6px;
+    color: #333;
+    font-size: 13px;
+    text-align: center;
+}
+
+/* Scoring Table */
+.scoring-table-wrapper {
+    overflow-x: auto;
+    margin-bottom: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.final-score-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: white;
+    font-size: 13px;
+}
+
+.final-score-table thead {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+}
+
+.final-score-table th {
+    padding: 12px 8px;
+    text-align: center;
+    font-weight: 600;
+    font-size: 12px;
+    border-right: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.final-score-table th:last-child {
+    border-right: none;
+}
+
+.player-name-header {
+    min-width: 120px;
+    text-align: left !important;
+    padding-left: 16px !important;
+}
+
+.score-header {
+    min-width: 80px;
+}
+
+.nectar-header {
+    min-width: 90px;
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.tiebreaker-header {
+    background: rgba(0, 0, 0, 0.1);
+    font-size: 11px;
+}
+
+.total-header {
+    min-width: 100px;
+    background: rgba(255, 255, 255, 0.2);
+    font-size: 14px;
+}
+
+/* Table Body */
+.final-score-table tbody tr {
+    border-bottom: 1px solid #e0e0e0;
+    transition: background-color 0.2s;
+}
+
+.final-score-table tbody tr:hover {
+    background-color: #f5f5f5;
+}
+
+.final-score-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.player-row.winner-row {
+    background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
+    border: 2px solid #ffd700;
+}
+
+.player-row.winner-row:hover {
+    background: linear-gradient(90deg, #fff5cc 0%, #fffef7 100%);
+}
+
+.final-score-table td {
+    padding: 12px 8px;
+    text-align: center;
+    border-right: 1px solid #f0f0f0;
+}
+
+.final-score-table td:last-child {
+    border-right: none;
+}
+
+.player-name-cell {
+    text-align: left !important;
+    padding-left: 16px !important;
+}
+
+.player-name-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.player-color-indicator {
+    width: 16px;
+    height: 16px;
+    border-radius: 3px;
+    border: 2px solid rgba(0, 0, 0, 0.2);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    flex-shrink: 0;
+}
+
+.player-color-indicator.blue {
+    background: #2196F3;
+}
+
+.player-color-indicator.purple {
+    background: #9C27B0;
+}
+
+.player-color-indicator.green {
+    background: #4CAF50;
+}
+
+.player-color-indicator.red {
+    background: #F44336;
+}
+
+.player-color-indicator.yellow {
+    background: #FFC107;
+}
+
+/* Input Styles */
+.player-name-input {
+    width: 100%;
+    max-width: 150px;
+    padding: 6px 10px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.player-name-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.score-input {
+    width: 60px;
+    padding: 6px 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+    font-size: 13px;
+    text-align: center;
+}
+
+.score-input:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+}
+
+.nectar-input {
+    background-color: #f9f9ff;
+}
+
+.tiebreaker-input {
+    background-color: #f5f5f5;
+    font-size: 12px;
+}
+
+/* Remove spinner arrows from number inputs */
+.score-input::-webkit-outer-spin-button,
+.score-input::-webkit-inner-spin-button {
+    -webkit-appearance: none;
+    margin: 0;
+}
+
+.score-input[type=number] {
+    -moz-appearance: textfield;
+}
+
+/* Total Display */
+.total-cell {
+    background-color: #f9f9f9;
+    font-weight: bold;
+}
+
+.total-display {
+    font-size: 16px;
+    color: #333;
+}
+
+.winner-row .total-display {
+    color: #d4af37;
+    font-size: 18px;
+}
+
+/* Score Actions */
+.score-actions {
+    display: flex;
+    gap: 12px;
+    justify-content: center;
+    margin-top: 20px;
+}
+
+/* Results Section */
+.results-section {
+    margin-top: 40px;
+    padding: 24px;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    border-radius: 12px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+}
+
+.results-section h2 {
+    margin-top: 0;
+    color: #333;
+    text-align: center;
+}
+
+.results-section h3 {
+    color: #555;
+    margin-bottom: 16px;
+}
+
+/* Nectar Breakdown */
+.nectar-breakdown {
+    margin-bottom: 32px;
+}
+
+.nectar-habitats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 16px;
+    margin-top: 16px;
+}
+
+.nectar-habitat {
+    background: white;
+    padding: 16px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.nectar-habitat h4 {
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-size: 16px;
+    color: #333;
+}
+
+.nectar-result-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 12px;
+    margin-bottom: 8px;
+    border-radius: 6px;
+    background-color: #f9f9f9;
+}
+
+.nectar-result-item:last-child {
+    margin-bottom: 0;
+}
+
+.nectar-result-item.first-place {
+    background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);
+    font-weight: 600;
+}
+
+.nectar-result-item.second-place {
+    background: linear-gradient(90deg, #c0c0c0 0%, #e0e0e0 100%);
+    font-weight: 500;
+}
+
+.nectar-result-item .player-name {
+    font-weight: 500;
+}
+
+.nectar-result-item .nectar-count {
+    font-size: 12px;
+    color: #666;
+}
+
+.nectar-result-item .nectar-points {
+    font-weight: bold;
+    color: #667eea;
+}
+
+.no-nectar {
+    color: #999;
+    font-style: italic;
+    text-align: center;
+    padding: 16px;
+}
+
+/* Final Rankings */
+.final-rankings {
+    background: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+.ranking-item {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 16px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background-color: #f9f9f9;
+    border-left: 4px solid #ddd;
+}
+
+.ranking-item:last-child {
+    margin-bottom: 0;
+}
+
+.ranking-item.winner {
+    background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
+    border-left-color: #ffd700;
+    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+}
+
+.rank-label {
+    font-size: 14px;
+    font-weight: 600;
+    min-width: 100px;
+    color: #666;
+}
+
+.ranking-item.winner .rank-label {
+    font-size: 18px;
+    color: #d4af37;
+}
+
+.player-info {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    flex: 1;
+}
+
+.player-info .player-name {
+    font-size: 16px;
+    font-weight: 600;
+    color: #333;
+}
+
+.ranking-item.winner .player-info .player-name {
+    font-size: 18px;
+    color: #d4af37;
+}
+
+.player-info .player-score {
+    font-size: 14px;
+    color: #666;
+}
+
+/* Responsive */
+@media (max-width: 768px) {
+    .scoring-table-wrapper {
+        font-size: 11px;
+    }
+
+    .final-score-table th {
+        padding: 8px 4px;
+        font-size: 10px;
+    }
+
+    .final-score-table td {
+        padding: 8px 4px;
+    }
+
+    .score-input {
+        width: 50px;
+        font-size: 12px;
+        padding: 4px 6px;
+    }
+
+    .player-name-input {
+        max-width: 100px;
+        font-size: 12px;
+    }
+
+    .nectar-habitats {
+        grid-template-columns: 1fr;
+    }
+
+    .score-actions {
+        flex-direction: column;
+    }
+
+    .score-actions button {
+        width: 100%;
+    }
+}
