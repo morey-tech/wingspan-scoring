@@ -19,14 +19,21 @@ func Initialize() error {
 		dbPath = "./data/wingspan.db"
 	}
 
+	// Resolve absolute path
+	if !filepath.IsAbs(dbPath) {
+		absPath, err := filepath.Abs(dbPath)
+		if err != nil {
+			return fmt.Errorf("failed to resolve absolute path: %w", err)
+		}
+		dbPath = absPath
+	}
+	fmt.Println("Resolved database path:", dbPath)
+
 	// Ensure the directory exists
 	dir := filepath.Dir(dbPath)
 	if err := os.MkdirAll(dir, 0755); err != nil {
 		return fmt.Errorf("failed to create database directory: %w", err)
 	}
-
-	// Print the database path
-	fmt.Println("Database path:", dbPath)
 
 	// Open database connection
 	var err error
@@ -37,6 +44,7 @@ func Initialize() error {
 
 	// Test the connection
 	if err := DB.Ping(); err != nil {
+		fmt.Printf("Failed to ping database: %v\n", err)
 		return fmt.Errorf("failed to ping database: %w", err)
 	}
 
