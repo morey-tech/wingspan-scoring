@@ -556,6 +556,9 @@ function toggleScoringMode() {
 
     // Re-render cubes in visible boxes (will be empty after clear)
     renderAllCubes();
+
+    // Save the mode change
+    saveGameState();
 }
 
 // Render all cubes
@@ -577,7 +580,11 @@ function renderAllCubes() {
 // Save game state to localStorage
 function saveGameState() {
     try {
-        localStorage.setItem('wingspanGameState', JSON.stringify(gameState));
+        const stateToSave = {
+            ...gameState,
+            currentMode: currentMode
+        };
+        localStorage.setItem('wingspanGameState', JSON.stringify(stateToSave));
     } catch (e) {
         console.error('Failed to save game state:', e);
     }
@@ -592,15 +599,29 @@ function loadGameState() {
             // Only load if player count matches
             const currentCount = parseInt(document.getElementById('numPlayers').value);
             if (loaded.players && loaded.players.length === currentCount) {
-                gameState = loaded;
+                // Restore currentMode (default to 'blue' if not found)
+                const savedMode = loaded.currentMode || 'blue';
+
+                // Extract gameState properties (exclude currentMode)
+                gameState = {
+                    players: loaded.players,
+                    cubePlacements: loaded.cubePlacements || {},
+                    goals: loaded.goals || null
+                };
+
                 renderPlayerList();
                 renderScoreTable();
-                renderAllCubes();
 
                 // Restore goals if they exist in saved state
                 if (gameState.goals) {
                     setGoalDisplay(gameState.goals);
                 }
+
+                // Apply the visual state for the saved mode
+                applyModeVisualState(savedMode);
+
+                // Render cubes after visual state is applied
+                renderAllCubes();
 
                 return true; // Successfully loaded saved state
             }
@@ -609,4 +630,33 @@ function loadGameState() {
         console.error('Failed to load game state:', e);
     }
     return false; // No saved state found
+}
+
+// Apply visual state for the current mode
+function applyModeVisualState(mode) {
+    currentMode = mode;
+    const goalCard = document.getElementById('goalCard');
+    const toggleBtn = document.getElementById('toggleMode');
+    const blueTracks = goalCard.querySelectorAll('.blue-track');
+    const greenTracks = goalCard.querySelectorAll('.green-track');
+
+    if (currentMode === 'green') {
+        // Green mode
+        goalCard.classList.remove('green-side');
+        goalCard.classList.add('blue-side');
+        toggleBtn.textContent = 'Switch to Blue Side';
+        toggleBtn.classList.remove('green-mode');
+
+        blueTracks.forEach(track => track.style.display = 'none');
+        greenTracks.forEach(track => track.style.display = 'block');
+    } else {
+        // Blue mode
+        goalCard.classList.remove('blue-side');
+        goalCard.classList.add('green-side');
+        toggleBtn.textContent = 'Switch to Green Side';
+        toggleBtn.classList.add('green-mode');
+
+        blueTracks.forEach(track => track.style.display = 'block');
+        greenTracks.forEach(track => track.style.display = 'none');
+    }
 }
