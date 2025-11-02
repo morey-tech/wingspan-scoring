@@ -224,7 +224,16 @@ header h1 {
 }
 
 .goal-info {
-    padding: 10px;
+    padding: 12px;
+    margin-right: 30px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+    border-radius: 6px;
+}
+
+.goal-info:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: scale(1.02);
 }
 
 .goal-name {
@@ -232,12 +241,14 @@ header h1 {
     font-weight: 700;
     color: #3E3020;
     margin-bottom: 8px;
+    pointer-events: none;
 }
 
 .goal-description {
     font-size: 0.95em;
     color: #5A4A3A;
     line-height: 1.4;
+    pointer-events: none;
 }
 
 /* Blue Side Scoring Track */
@@ -654,6 +665,110 @@ footer p {
 
 .color-picker-item span {
     flex: 1;
+}
+
+/* Goal Selection Menu */
+.goal-menu {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.3);
+    padding: 15px;
+    z-index: 1000;
+    min-width: 350px;
+    max-width: 450px;
+    max-height: 500px;
+    overflow-y: auto;
+    animation: slideDown 0.2s ease;
+}
+
+.goal-menu-header {
+    font-weight: 600;
+    margin-bottom: 12px;
+    color: #333;
+    font-size: 1.2em;
+}
+
+.goal-menu-items {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.goal-menu-item {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+    border: 2px solid transparent;
+}
+
+.goal-menu-item:hover:not(.disabled) {
+    background: #f5f5f5;
+}
+
+.goal-menu-item.selected {
+    background: #e8f5e9;
+    border-color: #4CAF50;
+}
+
+.goal-menu-item.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.goal-content {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.menu-goal-name {
+    font-size: 1.1em;
+    font-weight: 700;
+    color: #333;
+    display: block;
+}
+
+.menu-goal-description {
+    font-size: 0.9em;
+    color: #666;
+    line-height: 1.4;
+    display: block;
+}
+
+.expansion-badge {
+    display: inline-block;
+    padding: 3px 8px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    font-weight: 600;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+.expansion-badge.base {
+    background: #B8DFE6;
+    color: #2C5F6F;
+}
+
+.expansion-badge.european {
+    background: #FFD9A0;
+    color: #8B5A00;
+}
+
+.expansion-badge.oceania {
+    background: #C8E6C9;
+    color: #2E7D32;
+}
+
+.goal-menu-actions {
+    display: flex;
+    gap: 8px;
 }
 
 /* Score Tracker */

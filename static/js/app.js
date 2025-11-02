@@ -16,6 +16,154 @@ let gameState = {
     goals: null // Current round goals (will be captured from HTML or loaded from server)
 };
 
+// All available goals (fetched from API)
+let allGoals = [];
+
+// Fetch all available goals from API
+async function fetchAllGoals() {
+    try {
+        const base = document.getElementById('base').checked;
+        const european = document.getElementById('european').checked;
+        const oceania = document.getElementById('oceania').checked;
+
+        const response = await fetch(`/api/goals?base=${base}&european=${european}&oceania=${oceania}`);
+        if (!response.ok) {
+            throw new Error('Failed to fetch goals');
+        }
+
+        allGoals = await response.json();
+        return allGoals;
+    } catch (error) {
+        console.error('Error fetching goals:', error);
+        return [];
+    }
+}
+
+// Show goal selection menu
+function showGoalMenu(element, round) {
+    // Remove any existing goal menu
+    const existingMenu = document.querySelector('.goal-menu');
+    if (existingMenu) {
+        existingMenu.remove();
+    }
+
+    const menu = document.createElement('div');
+    menu.className = 'goal-menu';
+
+    // Get currently selected goals to filter them out
+    const rounds = ['round1', 'round2', 'round3', 'round4'];
+    const selectedGoalIds = [];
+    if (gameState.goals) {
+        rounds.forEach(r => {
+            if (gameState.goals[r] && gameState.goals[r].id) {
+                selectedGoalIds.push(gameState.goals[r].id);
+            }
+        });
+    }
+
+    // Get current goal for this round
+    const roundKey = `round${round}`;
+    const currentGoalId = gameState.goals && gameState.goals[roundKey] ? gameState.goals[roundKey].id : null;
+
+    // Get expansion label
+    const getExpansionLabel = (expansion) => {
+        if (expansion === 'base') return 'Base';
+        if (expansion === 'european') return 'European';
+        if (expansion === 'oceania') return 'Oceania';
+        return expansion;
+    };
+
+    // Build menu HTML
+    const goalItems = allGoals
+        .map(goal => {
+            const isSelected = goal.id === currentGoalId;
+            const isDisabled = selectedGoalIds.includes(goal.id) && !isSelected;
+            const classes = ['goal-menu-item'];
+            if (isSelected) classes.push('selected');
+            if (isDisabled) classes.push('disabled');
+
+            return `
+                <div class="${classes.join(' ')}" data-goal-id="${goal.id}">
+                    <div class="goal-content">
+                        <strong class="menu-goal-name">${goal.name}</strong>
+                        <span class="menu-goal-description">${goal.description}</span>
+                        <span class="expansion-badge ${goal.expansion}">${getExpansionLabel(goal.expansion)}</span>
+                    </div>
+                    ${isSelected ? '<span class="checkmark">✓</span>' : ''}
+                </div>
+            `;
+        }).join('');
+
+    menu.innerHTML = `
+        <div class="goal-menu-header">Select Round ${round} Goal</div>
+        <div class="goal-menu-items">
+            ${goalItems}
+        </div>
+        <div class="goal-menu-actions">
+            <button class="menu-btn menu-btn-close">Close</button>
+        </div>
+    `;
+
+    // Position menu near the clicked element
+    const rect = element.getBoundingClientRect();
+    menu.style.position = 'fixed';
+    menu.style.left = `${rect.left}px`;
+    menu.style.top = `${rect.bottom + 5}px`;
+
+    document.body.appendChild(menu);
+
+    // Add event listeners to goal items (excluding disabled ones)
+    menu.querySelectorAll('.goal-menu-item:not(.disabled)').forEach(item => {
+        item.addEventListener('click', () => {
+            const goalId = item.dataset.goalId;
+            handleGoalSelection(round, goalId);
+            menu.remove();
+        });
+    });
+
+    // Close button handler
+    menu.querySelector('.menu-btn-close').addEventListener('click', () => {
+        menu.remove();
+    });
+
+    // Click outside to close
+    setTimeout(() => {
+        document.addEventListener('click', function closeMenu(e) {
+            if (!menu.contains(e.target) && e.target !== element) {
+                menu.remove();
+                document.removeEventListener('click', closeMenu);
+            }
+        });
+    }, 100);
+}
+
+// Handle goal selection
+function handleGoalSelection(round, goalId) {
+    // Find the selected goal
+    const selectedGoal = allGoals.find(g => g.id === goalId);
+    if (!selectedGoal) return;
+
+    // Update gameState
+    const roundKey = `round${round}`;
+    if (!gameState.goals) {
+        gameState.goals = {};
+    }
+    gameState.goals[roundKey] = selectedGoal;
+
+    // Update the display
+    const goalInfo = document.querySelector(`.goal-info[data-round="${round}"]`);
+    if (goalInfo) {
+        const goalName = goalInfo.querySelector('.goal-name');
+        const goalDescription = goalInfo.querySelector('.goal-description');
+
+        if (goalName) goalName.textContent = selectedGoal.name;
+        if (goalDescription) goalDescription.textContent = selectedGoal.description;
+    }
+
+    // Save state
+    saveGameState();
+}
+
 // Initialize
 document.addEventListener('DOMContentLoaded', function() {
     const newGameBtn = document.getElementById('newGame');
@@ -37,15 +185,40 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click handlers to all score boxes
     initializeScoreBoxHandlers();
 
-    // Load saved state if available
-    const hasSavedState = loadGameState();
+    // Add click event listeners to goal-info areas
+    document.querySelectorAll('.goal-info').forEach(goalInfo => {
+        goalInfo.addEventListener('click', function(e) {
+            const round = parseInt(this.dataset.round);
+            showGoalMenu(this, round);
+        });
+    });
 
-    // If no saved state with goals, capture goals from server-rendered HTML
-    if (!hasSavedState || !gameState.goals) {
-        // Capture the goals that were rendered by the server
-        gameState.goals = captureGoalsFromDisplay();
-        saveGameState();
-    }
+    // Add event listeners for expansion checkboxes to re-fetch goals
+    const expansionCheckboxes = ['base', 'european', 'oceania'];
+    expansionCheckboxes.forEach(id => {
+        const checkbox = document.getElementById(id);
+        if (checkbox) {
+            checkbox.addEventListener('change', async () => {
+                await fetchAllGoals();
+            });
+        }
+    });
+
+    // Initialize goals
+    (async function() {
+        // Fetch all available goals
+        await fetchAllGoals();
+
+        // Load saved state if available
+        const hasSavedState = loadGameState();
+
+        // If no saved state with goals, capture goals from server-rendered HTML
+        if (!hasSavedState || !gameState.goals) {
+            // Capture the goals that were rendered by the server
+            gameState.goals = captureGoalsFromDisplay();
+            saveGameState();
+        }
+    })();
 });
 
 // Initialize players based on count
@@ -464,6 +637,9 @@ async function generateNewGame() {
         const goals = await response.json();
         updateGoalDisplay(goals);
         clearAllCubes();
+
+        // Re-fetch goals based on new expansion selection
+        await fetchAllGoals();
     } catch (error) {
         console.error('Error generating new game:', error);
         alert('Failed to generate new game. Please try again.');
@@ -484,10 +660,22 @@ function captureGoalsFromDisplay() {
             const descElement = row.querySelector('.goal-description');
 
             if (nameElement && descElement) {
-                goals[round] = {
-                    name: nameElement.textContent,
-                    description: descElement.textContent
-                };
+                const goalName = nameElement.textContent;
+                const goalDescription = descElement.textContent;
+
+                // Try to match with full goal data from allGoals to get the ID
+                const matchedGoal = allGoals.find(g => g.name === goalName);
+
+                if (matchedGoal) {
+                    // Use the full goal object with ID
+                    goals[round] = matchedGoal;
+                } else {
+                    // Fallback to basic data if no match found
+                    goals[round] = {
+                        name: goalName,
+                        description: goalDescription
+                    };
+                }
             }
         }
     });
