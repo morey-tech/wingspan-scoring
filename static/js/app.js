@@ -185,6 +185,9 @@ document.addEventListener('DOMContentLoaded', function() {
     // Add click handlers to all score boxes
     initializeScoreBoxHandlers();
 
+    // Initialize game end section
+    initializeGameEndSection();
+
     // Add click event listeners to goal-info areas
     document.querySelectorAll('.goal-info').forEach(goalInfo => {
         goalInfo.addEventListener('click', function(e) {
@@ -234,6 +237,10 @@ function initializePlayers(count) {
     }
     renderPlayerList();
     renderScoreTable();
+    // Update game end section with new player count
+    if (typeof generateGameEndPlayerRows === 'function') {
+        generateGameEndPlayerRows();
+    }
 }
 
 // Render player list in the setup area
@@ -263,6 +270,10 @@ function renderPlayerList() {
             gameState.players[player.id].name = e.target.value || `Player ${index + 1}`;
             renderScoreTable();
             saveGameState();
+            // Update game end section with new player name
+            if (typeof generateGameEndPlayerRows === 'function') {
+                generateGameEndPlayerRows();
+            }
         });
 
         // Add event listener for cube click (color picker)
@@ -785,6 +796,11 @@ function saveGameState() {
             currentMode: currentMode
         };
         localStorage.setItem('wingspanGameState', JSON.stringify(stateToSave));
+
+        // Auto-sync round goals to game end section
+        if (typeof updateGameEndRoundGoals === 'function') {
+            updateGameEndRoundGoals();
+        }
     } catch (e) {
         console.error('Failed to save game state:', e);
     }
@@ -859,4 +875,504 @@ function applyModeVisualState(mode) {
         blueTracks.forEach(track => track.style.display = 'block');
         greenTracks.forEach(track => track.style.display = 'none');
     }
+}
+
+// ============================================================================
+// GAME END SCORING FUNCTIONALITY
+// ============================================================================
+
+const GAME_END_STORAGE_KEY = 'wingspan-game-end-scores';
+
+// Game end state
+let gameEndState = {
+    includeOceania: true,
+    players: []
+};
+
+// Initialize game end section
+function initializeGameEndSection() {
+    const oceaniaToggle = document.getElementById('oceaniaToggle');
+    const calculateBtn = document.getElementById('calculateBtn');
+    const clearGameEndBtn = document.getElementById('clearGameEndBtn');
+
+    if (oceaniaToggle) {
+        oceaniaToggle.addEventListener('change', handleOceaniaToggle);
+    }
+    if (calculateBtn) {
+        calculateBtn.addEventListener('click', calculateGameEndScores);
+    }
+    if (clearGameEndBtn) {
+        clearGameEndBtn.addEventListener('click', clearAllGameEndScores);
+    }
+
+    // Load saved game end state
+    loadGameEndState();
+
+    // Generate player rows for game end table
+    generateGameEndPlayerRows();
+}
+
+// Handle Oceania toggle
+function handleOceaniaToggle(e) {
+    gameEndState.includeOceania = e.target.checked;
+    const nectarHeaders = document.querySelectorAll('.nectar-header');
+    const nectarCells = document.querySelectorAll('.nectar-cell');
+
+    nectarHeaders.forEach(header => {
+        header.style.display = gameEndState.includeOceania ? '' : 'none';
+    });
+
+    nectarCells.forEach(cell => {
+        cell.style.display = gameEndState.includeOceania ? '' : 'none';
+    });
+
+    // Hide/show nectar rules
+    const nectarRules = document.querySelector('.nectar-rules');
+    if (nectarRules) {
+        nectarRules.style.display = gameEndState.includeOceania ? '' : 'none';
+    }
+
+    // Hide/show nectar breakdown in results
+    const nectarBreakdown = document.getElementById('nectarBreakdown');
+    if (nectarBreakdown) {
+        nectarBreakdown.style.display = gameEndState.includeOceania ? '' : 'none';
+    }
+
+    saveGameEndState();
+}
+
+// Generate player rows for game end table
+function generateGameEndPlayerRows() {
+    const tbody = document.getElementById('gameEndTableBody');
+    if (!tbody) return;
+
+    tbody.innerHTML = '';
+    const numPlayers = gameState.players.length;
+
+    for (let i = 0; i < numPlayers; i++) {
+        const player = gameState.players[i];
+        const playerNum = i + 1;
+        const playerName = player.name || `Player ${playerNum}`;
+        const playerColor = player.color || PLAYER_COLORS[i];
+
+        // Calculate round goal score for this player
+        const roundGoalScore = calculatePlayerRoundGoalScore(player.color);
+
+        const row = document.createElement('tr');
+        row.className = 'player-row';
+        row.dataset.playerIndex = playerNum;
+
+        row.innerHTML = `
+            <td class="player-name-cell">
+                <div class="player-name-wrapper">
+                    <span class="player-color-indicator ${playerColor}"></span>
+                    <span class="player-name-display">${playerName}</span>
+                </div>
+            </td>
+            <td class="score-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="birdPoints">
+            </td>
+            <td class="score-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="bonusCards">
+            </td>
+            <td class="score-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input game-end-input"
+                       min="0"
+                       value="${roundGoalScore}"
+                       data-player="${playerNum}"
+                       data-field="roundGoals"
+                       readonly
+                       style="background-color: #f0f0f0;">
+            </td>
+            <td class="score-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="eggs">
+            </td>
+            <td class="score-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="cachedFood">
+            </td>
+            <td class="score-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="tuckedCards">
+            </td>
+            <td class="score-cell nectar-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input nectar-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="nectarForest">
+            </td>
+            <td class="score-cell nectar-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input nectar-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="nectarGrassland">
+            </td>
+            <td class="score-cell nectar-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input nectar-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="nectarWetland">
+            </td>
+            <td class="score-cell tiebreaker-cell">
+                <input type="number"
+                       inputmode="numeric"
+                       class="score-input tiebreaker-input game-end-input"
+                       min="0"
+                       placeholder="0"
+                       data-player="${playerNum}"
+                       data-field="unusedFood">
+            </td>
+            <td class="total-cell">
+                <span class="total-display">0</span>
+            </td>
+        `;
+
+        tbody.appendChild(row);
+    }
+
+    // Add event listeners to all game end inputs
+    document.querySelectorAll('.game-end-input').forEach(input => {
+        input.addEventListener('change', saveGameEndState);
+        input.addEventListener('focus', (e) => {
+            if (e.target.value) {
+                e.target.select();
+            }
+        });
+    });
+
+    // Apply saved state
+    applyGameEndSavedState();
+
+    // Update nectar visibility
+    const oceaniaToggle = document.getElementById('oceaniaToggle');
+    if (oceaniaToggle) {
+        handleOceaniaToggle({ target: oceaniaToggle });
+    }
+}
+
+// Calculate round goal score for a specific player color
+function calculatePlayerRoundGoalScore(playerColor) {
+    let totalScore = 0;
+
+    // For each round (1-4), find the score for this player's color
+    for (let round = 1; round <= 4; round++) {
+        // Check all cube placement keys for this round
+        for (const [key, colors] of Object.entries(gameState.cubePlacements)) {
+            const parts = key.split('-');
+            const r = parseInt(parts[0]);
+            const score = parseInt(parts[1]);
+
+            // If this key is for the current round and contains this player's color
+            if (r === round && colors && colors.includes(playerColor)) {
+                totalScore += score;
+                break; // Found score for this round, move to next round
+            }
+        }
+    }
+
+    return totalScore;
+}
+
+// Update game end section when round scores change (auto-sync)
+function updateGameEndRoundGoals() {
+    const numPlayers = gameState.players.length;
+
+    for (let i = 0; i < numPlayers; i++) {
+        const player = gameState.players[i];
+        const playerNum = i + 1;
+        const roundGoalScore = calculatePlayerRoundGoalScore(player.color);
+
+        const roundGoalsInput = document.querySelector(
+            `.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`
+        );
+
+        if (roundGoalsInput) {
+            roundGoalsInput.value = roundGoalScore;
+        }
+    }
+}
+
+// Calculate game end scores
+async function calculateGameEndScores() {
+    const players = [];
+
+    // Gather player data
+    for (let i = 0; i < gameState.players.length; i++) {
+        const player = gameState.players[i];
+        const playerNum = i + 1;
+        const playerName = player.name || `Player ${playerNum}`;
+
+        const playerData = {
+            playerName: playerName,
+            birdPoints: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="birdPoints"]`).value) || 0,
+            bonusCards: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="bonusCards"]`).value) || 0,
+            roundGoals: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`).value) || 0,
+            eggs: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="eggs"]`).value) || 0,
+            cachedFood: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="cachedFood"]`).value) || 0,
+            tuckedCards: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="tuckedCards"]`).value) || 0,
+            nectarForest: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="nectarForest"]`).value) || 0,
+            nectarGrassland: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="nectarGrassland"]`).value) || 0,
+            nectarWetland: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="nectarWetland"]`).value) || 0,
+            unusedFood: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="unusedFood"]`).value) || 0
+        };
+
+        players.push(playerData);
+    }
+
+    try {
+        const response = await fetch('/api/calculate-game-end', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+                players: players,
+                includeOceania: gameEndState.includeOceania
+            })
+        });
+
+        if (!response.ok) {
+            throw new Error('Failed to calculate scores');
+        }
+
+        const result = await response.json();
+        displayGameEndResults(result);
+    } catch (error) {
+        console.error('Error calculating scores:', error);
+        alert('Error calculating game end scores. Please try again.');
+    }
+}
+
+// Display game end results
+function displayGameEndResults(result) {
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.style.display = 'block';
+
+    // Clear all winner highlighting first
+    document.querySelectorAll('#gameEndTableBody .player-row').forEach(row => {
+        row.classList.remove('winner-row');
+    });
+
+    // Update total cells in the table - match by player name
+    result.players.forEach(player => {
+        // Find the row with this player's name
+        const nameDisplays = document.querySelectorAll('.player-name-display');
+        let playerRowIndex = null;
+
+        nameDisplays.forEach((display, idx) => {
+            if (display.textContent === player.playerName) {
+                playerRowIndex = idx + 1;
+            }
+        });
+
+        if (playerRowIndex) {
+            const totalCell = document.querySelector(`#gameEndTableBody tr[data-player-index="${playerRowIndex}"] .total-display`);
+            if (totalCell) {
+                totalCell.textContent = player.total;
+            }
+
+            // Highlight winner(s)
+            const row = document.querySelector(`#gameEndTableBody tr[data-player-index="${playerRowIndex}"]`);
+            if (row && player.rank === 1) {
+                row.classList.add('winner-row');
+            }
+        }
+    });
+
+    // Display nectar breakdown
+    if (gameEndState.includeOceania) {
+        displayNectarBreakdown(result.nectarScoring, result.players);
+    }
+
+    // Display final rankings
+    displayRankings(result.players);
+
+    // Scroll to results
+    resultsSection.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+}
+
+// Display nectar scoring breakdown
+function displayNectarBreakdown(nectarScoring, players) {
+    const habitats = ['forest', 'grassland', 'wetland'];
+
+    habitats.forEach(habitat => {
+        const resultDiv = document.getElementById(`nectar${habitat.charAt(0).toUpperCase() + habitat.slice(1)}Results`);
+        if (!resultDiv) return;
+
+        const scores = nectarScoring[habitat] || {};
+
+        // Create sorted list of players by nectar count
+        const playerNectar = players.map(p => ({
+            name: p.playerName,
+            count: p[`nectar${habitat.charAt(0).toUpperCase() + habitat.slice(1)}`],
+            points: scores[p.playerName] || 0
+        })).filter(p => p.count > 0);
+
+        playerNectar.sort((a, b) => b.count - a.count);
+
+        if (playerNectar.length === 0) {
+            resultDiv.innerHTML = '<p class="no-nectar">No nectar in this habitat</p>';
+        } else {
+            resultDiv.innerHTML = playerNectar.map(p => `
+                <div class="nectar-result-item ${p.points === 5 ? 'first-place' : p.points === 2 ? 'second-place' : ''}">
+                    <span class="player-name">${p.name}</span>
+                    <span class="nectar-count">${p.count} nectar</span>
+                    <span class="nectar-points">${p.points} pts</span>
+                </div>
+            `).join('');
+        }
+    });
+}
+
+// Display final rankings
+function displayRankings(players) {
+    const rankingsList = document.getElementById('rankingsList');
+
+    const rankingsHtml = players.map(player => {
+        const rankLabel = player.rank === 1 ? '🏆 Winner' : `${getOrdinal(player.rank)} Place`;
+        const tiebreakerInfo = players.filter(p => p.total === player.total).length > 1
+            ? ` (${player.unusedFood} unused food)`
+            : '';
+
+        return `
+            <div class="ranking-item ${player.rank === 1 ? 'winner' : ''}">
+                <div class="rank-label">${rankLabel}</div>
+                <div class="player-info">
+                    <span class="player-name">${player.playerName}</span>
+                    <span class="player-score">${player.total} points${tiebreakerInfo}</span>
+                </div>
+            </div>
+        `;
+    }).join('');
+
+    rankingsList.innerHTML = rankingsHtml;
+}
+
+// Helper to get ordinal (1st, 2nd, 3rd, etc.)
+function getOrdinal(n) {
+    const s = ['th', 'st', 'nd', 'rd'];
+    const v = n % 100;
+    return n + (s[(v - 20) % 10] || s[v] || s[0]);
+}
+
+// Clear all game end scores
+function clearAllGameEndScores() {
+    if (!confirm('Clear all game end scores? This cannot be undone.')) {
+        return;
+    }
+
+    document.querySelectorAll('.game-end-input:not([readonly])').forEach(input => {
+        input.value = '';
+    });
+
+    document.querySelectorAll('#gameEndTableBody .total-display').forEach(cell => {
+        cell.textContent = '0';
+    });
+
+    document.querySelectorAll('#gameEndTableBody .player-row').forEach(row => {
+        row.classList.remove('winner-row');
+    });
+
+    const resultsSection = document.getElementById('resultsSection');
+    resultsSection.style.display = 'none';
+
+    saveGameEndState();
+}
+
+// Save game end state to localStorage
+function saveGameEndState() {
+    const state = {
+        includeOceania: gameEndState.includeOceania,
+        players: []
+    };
+
+    // Save all player data
+    for (let i = 1; i <= gameState.players.length; i++) {
+        const playerData = {};
+        document.querySelectorAll(`.game-end-input[data-player="${i}"]`).forEach(input => {
+            playerData[input.dataset.field] = input.value;
+        });
+        state.players.push(playerData);
+    }
+
+    localStorage.setItem(GAME_END_STORAGE_KEY, JSON.stringify(state));
+}
+
+// Load game end state from localStorage
+function loadGameEndState() {
+    const saved = localStorage.getItem(GAME_END_STORAGE_KEY);
+    if (saved) {
+        try {
+            const state = JSON.parse(saved);
+            gameEndState.includeOceania = state.includeOceania !== undefined ? state.includeOceania : true;
+            gameEndState.players = state.players || [];
+
+            // Update UI
+            const oceaniaToggle = document.getElementById('oceaniaToggle');
+            if (oceaniaToggle) {
+                oceaniaToggle.checked = gameEndState.includeOceania;
+            }
+        } catch (error) {
+            console.error('Error loading game end state:', error);
+        }
+    }
+}
+
+// Apply saved game end state to inputs
+function applyGameEndSavedState() {
+    gameEndState.players.forEach((playerData, index) => {
+        const playerNum = index + 1;
+        if (playerNum > gameState.players.length) return;
+
+        Object.keys(playerData).forEach(field => {
+            // Skip roundGoals as it's auto-synced from round goals
+            if (field === 'roundGoals') {
+                return;
+            }
+
+            const input = document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="${field}"]`);
+            if (input && playerData[field]) {
+                input.value = playerData[field];
+            }
+        });
+    });
 }

@@ -51,7 +51,6 @@ func main() {
 
 	// Routes
 	http.HandleFunc("/", handleHome)
-	http.HandleFunc("/game-end", handleGameEnd)
 	http.HandleFunc("/history", handleHistory)
 	http.HandleFunc("/api/new-game", handleNewGame)
 	http.HandleFunc("/api/goals", handleGetGoals)
@@ -165,24 +164,6 @@ func handleCalculateScores(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(scores)
-}
-
-func handleGameEnd(w http.ResponseWriter, r *http.Request) {
-	data := PageData{
-		BaseGame:     true,
-		European:     true,
-		Oceania:      true,
-		NumPlayers:   4, // Default to 4 players
-		PageTitle:    "Game End Calculator",
-		PageSubtitle: "Game End Calculator",
-		CurrentPage:  "game-end",
-	}
-
-	err := tmpl.ExecuteTemplate(w, "game-end.html", data)
-	if err != nil {
-		log.Println("Error rendering template:", err)
-		http.Error(w, "Error rendering page", http.StatusInternalServerError)
-	}
 }
 
 func handleCalculateGameEnd(w http.ResponseWriter, r *http.Request) {
