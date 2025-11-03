@@ -127,7 +127,7 @@ The Wingspan Goals app now includes comprehensive score tracking functionality w
    - Watch score tracker update automatically
 
 3. **After Game**:
-   - View final scores in tracker table
+   - View game end scores in tracker table
    - Winner highlighted automatically
    - Print card and scores for records
    - Clear cubes for next game

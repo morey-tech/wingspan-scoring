@@ -1,6 +1,6 @@
-// Final Score Calculator for Wingspan
+// Game End Calculator for Wingspan
 
-const STORAGE_KEY = 'wingspan-final-scores';
+const STORAGE_KEY = 'wingspan-game-end-scores';
 const GOALS_PAGE_STORAGE_KEY = 'wingspanGameState';
 
 // Player colors (matching goals page)
@@ -27,7 +27,7 @@ document.addEventListener('DOMContentLoaded', () => {
 function initializeEventListeners() {
     document.getElementById('numPlayers').addEventListener('change', handlePlayerCountChange);
     document.getElementById('oceaniaToggle').addEventListener('change', handleOceaniaToggle);
-    document.getElementById('calculateBtn').addEventListener('click', calculateFinalScores);
+    document.getElementById('calculateBtn').addEventListener('click', calculateGameEndScores);
     document.getElementById('clearBtn').addEventListener('click', clearAllScores);
 }
 
@@ -192,8 +192,8 @@ function generatePlayerRows() {
     handleOceaniaToggle({ target: document.getElementById('oceaniaToggle') });
 }
 
-// Calculate final scores
-async function calculateFinalScores() {
+// Calculate game end scores
+async function calculateGameEndScores() {
     const players = [];
 
     // Gather player data
@@ -219,7 +219,7 @@ async function calculateFinalScores() {
     }
 
     try {
-        const response = await fetch('/api/calculate-final-score', {
+        const response = await fetch('/api/calculate-game-end', {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
@@ -238,7 +238,7 @@ async function calculateFinalScores() {
         displayResults(result);
     } catch (error) {
         console.error('Error calculating scores:', error);
-        alert('Error calculating final scores. Please try again.');
+        alert('Error calculating game end scores. Please try again.');
     }
 }
 
@@ -408,7 +408,7 @@ function loadGameState() {
     // First, try to load player data from the goals page
     loadPlayersFromGoalsPage();
 
-    // Then load final score specific data (scores, etc.)
+    // Then load game end specific data (scores, etc.)
     const saved = localStorage.getItem(STORAGE_KEY);
     if (saved) {
         try {

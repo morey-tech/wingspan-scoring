@@ -108,7 +108,7 @@ function displayGames(games) {
     const gamesList = document.getElementById('gamesList');
 
     if (!games || games.length === 0) {
-        gamesList.innerHTML = '<div class="no-games">No games recorded yet. Play a game and calculate final scores to see it here!</div>';
+        gamesList.innerHTML = '<div class="no-games">No games recorded yet. Play a game and calculate game end scores to see it here!</div>';
         return;
     }
 
@@ -233,7 +233,7 @@ function displayGameDetails(game) {
             </div>
 
             <div class="details-scores">
-                <h4>Final Scores</h4>
+                <h4>Game End Scores</h4>
                 <table class="details-table">
                     <thead>
                         <tr>

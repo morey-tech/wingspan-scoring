@@ -10,18 +10,18 @@ import (
 
 // GameResult represents a saved game result
 type GameResult struct {
-	ID             int64                        `json:"id"`
-	CreatedAt      time.Time                    `json:"createdAt"`
-	NumPlayers     int                          `json:"numPlayers"`
-	IncludeOceania bool                         `json:"includeOceania"`
-	WinnerName     string                       `json:"winnerName"`
-	WinnerScore    int                          `json:"winnerScore"`
-	Players        []scoring.PlayerFinalScore   `json:"players"`
-	NectarScoring  *scoring.NectarScoring       `json:"nectarScoring,omitempty"`
+	ID             int64                      `json:"id"`
+	CreatedAt      time.Time                  `json:"createdAt"`
+	NumPlayers     int                        `json:"numPlayers"`
+	IncludeOceania bool                       `json:"includeOceania"`
+	WinnerName     string                     `json:"winnerName"`
+	WinnerScore    int                        `json:"winnerScore"`
+	Players        []scoring.PlayerGameEnd    `json:"players"`
+	NectarScoring  *scoring.NectarScoring     `json:"nectarScoring,omitempty"`
 }
 
 // SaveGameResult saves a game result to the database
-func SaveGameResult(players []scoring.PlayerFinalScore, nectarScoring scoring.NectarScoring, includeOceania bool) (int64, error) {
+func SaveGameResult(players []scoring.PlayerGameEnd, nectarScoring scoring.NectarScoring, includeOceania bool) (int64, error) {
 	if len(players) == 0 {
 		return 0, fmt.Errorf("no players provided")
 	}
@@ -240,7 +240,7 @@ func GetPlayerStats(playerName string) (map[string]interface{}, error) {
 			continue
 		}
 
-		var players []scoring.PlayerFinalScore
+		var players []scoring.PlayerGameEnd
 		if err := json.Unmarshal([]byte(playersJSON), &players); err != nil {
 			continue
 		}

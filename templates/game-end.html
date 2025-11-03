@@ -3,14 +3,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wingspan - Final Score Calculator</title>
+    <title>Wingspan - Game End Calculator</title>
     <link rel="stylesheet" href="/static/css/styles.css">
-    <link rel="stylesheet" href="/static/css/final-score.css">
+    <link rel="stylesheet" href="/static/css/game-end.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Wingspan Final Score Calculator</h1>
+            <h1>Wingspan Game End Calculator</h1>
             <div class="controls">
                 <a href="/" class="btn-secondary">Back to Goals</a>
                 <a href="/history" class="btn-secondary">Game History</a>
@@ -41,7 +41,7 @@
             <p class="nectar-rules"><strong>Nectar Tie Rule:</strong> Players who tie split and average their placement points (rounded down). Example: 2 players tie for 1st = (5+2)/2 = 3 points each.</p>
 
             <div class="scoring-table-wrapper">
-                <table class="final-score-table" id="scoreTable">
+                <table class="game-end-table" id="scoreTable">
                     <thead>
                         <tr>
                             <th class="player-name-header">Player</th>
@@ -65,7 +65,7 @@
             </div>
 
             <div class="score-actions">
-                <button id="calculateBtn" class="btn-primary">Calculate Final Scores</button>
+                <button id="calculateBtn" class="btn-primary">Calculate Game End Scores</button>
                 <button id="clearBtn" class="btn-secondary">Clear All</button>
             </div>
         </div>
@@ -103,6 +103,6 @@
         </footer>
     </div>
 
-    <script src="/static/js/final-score.js"></script>
+    <script src="/static/js/game-end.js"></script>
 </body>
 </html>

@@ -4,8 +4,8 @@ import (
 	"sort"
 )
 
-// PlayerFinalScore represents a player's complete end-game score
-type PlayerFinalScore struct {
+// PlayerGameEnd represents a player's complete end-game score
+type PlayerGameEnd struct {
 	PlayerName       string `json:"playerName"`
 	BirdPoints       int    `json:"birdPoints"`
 	BonusCards       int    `json:"bonusCards"`
@@ -28,8 +28,8 @@ type NectarScoring struct {
 	Wetland    map[string]int `json:"wetland"`    // playerName -> points
 }
 
-// CalculateFinalScores calculates all player scores including nectar competitive scoring
-func CalculateFinalScores(players []PlayerFinalScore, includeOceania bool) ([]PlayerFinalScore, NectarScoring) {
+// CalculateGameEndScores calculates all player scores including nectar competitive scoring
+func CalculateGameEndScores(players []PlayerGameEnd, includeOceania bool) ([]PlayerGameEnd, NectarScoring) {
 	nectarScoring := NectarScoring{
 		Forest:    make(map[string]int),
 		Grassland: make(map[string]int),
@@ -65,7 +65,7 @@ func CalculateFinalScores(players []PlayerFinalScore, includeOceania bool) ([]Pl
 }
 
 // calculateNectarPoints calculates competitive nectar scoring (1st=5pts, 2nd=2pts per habitat)
-func calculateNectarPoints(players []PlayerFinalScore) NectarScoring {
+func calculateNectarPoints(players []PlayerGameEnd) NectarScoring {
 	scoring := NectarScoring{
 		Forest:    make(map[string]int),
 		Grassland: make(map[string]int),
@@ -73,9 +73,9 @@ func calculateNectarPoints(players []PlayerFinalScore) NectarScoring {
 	}
 
 	// Score each habitat separately
-	scoring.Forest = scoreHabitat(players, func(p PlayerFinalScore) int { return p.NectarForest })
-	scoring.Grassland = scoreHabitat(players, func(p PlayerFinalScore) int { return p.NectarGrassland })
-	scoring.Wetland = scoreHabitat(players, func(p PlayerFinalScore) int { return p.NectarWetland })
+	scoring.Forest = scoreHabitat(players, func(p PlayerGameEnd) int { return p.NectarForest })
+	scoring.Grassland = scoreHabitat(players, func(p PlayerGameEnd) int { return p.NectarGrassland })
+	scoring.Wetland = scoreHabitat(players, func(p PlayerGameEnd) int { return p.NectarWetland })
 
 	return scoring
 }
@@ -83,7 +83,7 @@ func calculateNectarPoints(players []PlayerFinalScore) NectarScoring {
 // scoreHabitat scores a single habitat using competitive nectar rules with official tie-breaking
 // Tie Rule: Players who tie split and average their placement points (rounded down)
 // Example: 2 players tie for 1st place split (5+2)/2 = 3 points each
-func scoreHabitat(players []PlayerFinalScore, getNectar func(PlayerFinalScore) int) map[string]int {
+func scoreHabitat(players []PlayerGameEnd, getNectar func(PlayerGameEnd) int) map[string]int {
 	points := make(map[string]int)
 
 	// Group players by nectar count
@@ -147,7 +147,7 @@ func scoreHabitat(players []PlayerFinalScore, getNectar func(PlayerFinalScore) i
 }
 
 // determineRankings assigns ranks to players based on total score and tiebreakers
-func determineRankings(players []PlayerFinalScore) {
+func determineRankings(players []PlayerGameEnd) {
 	// Sort players by total (descending), then by unused food (descending) for tiebreaker
 	sort.Slice(players, func(i, j int) bool {
 		if players[i].Total == players[j].Total {

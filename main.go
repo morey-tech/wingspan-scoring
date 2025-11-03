@@ -48,12 +48,12 @@ func main() {
 
 	// Routes
 	http.HandleFunc("/", handleHome)
-	http.HandleFunc("/final-score", handleFinalScore)
+	http.HandleFunc("/game-end", handleGameEnd)
 	http.HandleFunc("/history", handleHistory)
 	http.HandleFunc("/api/new-game", handleNewGame)
 	http.HandleFunc("/api/goals", handleGetGoals)
 	http.HandleFunc("/api/calculate-scores", handleCalculateScores)
-	http.HandleFunc("/api/calculate-final-score", handleCalculateFinalScore)
+	http.HandleFunc("/api/calculate-game-end", handleCalculateGameEnd)
 	http.HandleFunc("/api/games", handleGetGames)
 	http.HandleFunc("/api/games/", handleGameRoute)
 	http.HandleFunc("/api/stats/", handleGetPlayerStats)
@@ -161,7 +161,7 @@ func handleCalculateScores(w http.ResponseWriter, r *http.Request) {
 	json.NewEncoder(w).Encode(scores)
 }
 
-func handleFinalScore(w http.ResponseWriter, r *http.Request) {
+func handleGameEnd(w http.ResponseWriter, r *http.Request) {
 	data := PageData{
 		BaseGame:  true,
 		European:  true,
@@ -169,22 +169,22 @@ func handleFinalScore(w http.ResponseWriter, r *http.Request) {
 		NumPlayers: 4, // Default to 4 players
 	}
 
-	err := tmpl.ExecuteTemplate(w, "final-score.html", data)
+	err := tmpl.ExecuteTemplate(w, "game-end.html", data)
 	if err != nil {
 		log.Println("Error rendering template:", err)
 		http.Error(w, "Error rendering page", http.StatusInternalServerError)
 	}
 }
 
-func handleCalculateFinalScore(w http.ResponseWriter, r *http.Request) {
+func handleCalculateGameEnd(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
 		return
 	}
 
 	var request struct {
-		Players        []scoring.PlayerFinalScore `json:"players"`
-		IncludeOceania bool                       `json:"includeOceania"`
+		Players        []scoring.PlayerGameEnd `json:"players"`
+		IncludeOceania bool                    `json:"includeOceania"`
 	}
 
 	err := json.NewDecoder(r.Body).Decode(&request)
@@ -193,8 +193,8 @@ func handleCalculateFinalScore(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// Calculate final scores
-	players, nectarScoring := scoring.CalculateFinalScores(request.Players, request.IncludeOceania)
+	// Calculate game end scores
+	players, nectarScoring := scoring.CalculateGameEndScores(request.Players, request.IncludeOceania)
 
 	// Save game result to database
 	gameID, err := db.SaveGameResult(players, nectarScoring, request.IncludeOceania)
@@ -206,9 +206,9 @@ func handleCalculateFinalScore(w http.ResponseWriter, r *http.Request) {
 	}
 
 	response := struct {
-		Players       []scoring.PlayerFinalScore `json:"players"`
-		NectarScoring scoring.NectarScoring      `json:"nectarScoring"`
-		GameID        int64                      `json:"gameId"`
+		Players       []scoring.PlayerGameEnd `json:"players"`
+		NectarScoring scoring.NectarScoring    `json:"nectarScoring"`
+		GameID        int64                    `json:"gameId"`
 	}{
 		Players:       players,
 		NectarScoring: nectarScoring,
