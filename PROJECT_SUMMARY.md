@@ -81,14 +81,14 @@ go run main.go
 
 ### 2. Build Binary
 ```bash
-go build -o wingspan-goals .
-./wingspan-goals
+go build -o wingspan-scoring .
+./wingspan-scoring
 ```
 
 ### 3. Docker
 ```bash
-docker build -t wingspan-goals .
-docker run -p 8080:8080 wingspan-goals
+docker build -t wingspan-scoring .
+docker run -p 8080:8080 wingspan-scoring
 ```
 
 ### 4. Docker Compose

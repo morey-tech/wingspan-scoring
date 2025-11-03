@@ -13,7 +13,7 @@ README.md
 *.swo
 
 # Build artifacts
-wingspan-goals
+wingspan-scoring
 *.exe
 
 # OS files

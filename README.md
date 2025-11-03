@@ -68,12 +68,12 @@ go run main.go
 
 **Build the Docker image:**
 ```bash
-docker build -t wingspan-goals .
+docker build -t wingspan-scoring .
 ```
 
 **Run the container:**
 ```bash
-docker run -p 8080:8080 wingspan-goals
+docker run -p 8080:8080 wingspan-scoring
 ```
 
 **Access the application:**
@@ -89,7 +89,7 @@ Open your browser to http://localhost:8080
 ## Project Structure
 
 ```
-wingspan-goals/
+wingspan-scoring/
 ├── main.go                 # HTTP server and handlers
 ├── goals/
 │   ├── goals.go           # Goal definitions (Base, European, Oceania)
@@ -161,7 +161,7 @@ wingspan-goals/
 ```yaml
 version: '3.8'
 services:
-  wingspan-goals:
+  wingspan-scoring:
     build: .
     ports:
       - "8080:8080"
@@ -172,8 +172,8 @@ services:
 
 **Build locally:**
 ```bash
-go build -o wingspan-goals .
-./wingspan-goals
+go build -o wingspan-scoring .
+./wingspan-scoring
 ```
 
 **Run tests:**

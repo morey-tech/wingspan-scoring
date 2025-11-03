@@ -1,7 +1,7 @@
 # Score Tracking Features
 
 ## Overview
-The Wingspan Goals app now includes comprehensive score tracking functionality with colored player cubes, interactive scoring, and automatic calculations.
+The Wingspan Scoring app now includes comprehensive score tracking functionality with colored player cubes, interactive scoring, and automatic calculations.
 
 ## Player Management
 

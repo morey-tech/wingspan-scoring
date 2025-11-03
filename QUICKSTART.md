@@ -13,8 +13,8 @@ Open your browser to: http://localhost:8080
 ### Option 2: Build and Run Binary
 
 ```bash
-go build -o wingspan-goals .
-./wingspan-goals
+go build -o wingspan-scoring .
+./wingspan-scoring
 ```
 
 Open your browser to: http://localhost:8080
@@ -23,10 +23,10 @@ Open your browser to: http://localhost:8080
 
 ```bash
 # Build the image
-docker build -t wingspan-goals .
+docker build -t wingspan-scoring .
 
 # Run the container
-docker run -p 8080:8080 wingspan-goals
+docker run -p 8080:8080 wingspan-scoring
 ```
 
 Open your browser to: http://localhost:8080
@@ -128,7 +128,7 @@ curl -X POST "http://localhost:8080/api/calculate-scores" \
 lsof -i :8080
 
 # Kill it or use a different port
-PORT=8080 ./wingspan-goals
+PORT=8080 ./wingspan-scoring
 ```
 
 **Docker build fails?**

@@ -18,7 +18,7 @@ COPY . .
 # Build the application
 # CGO_ENABLED=0 for static binary
 # -ldflags="-s -w" to reduce binary size
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o wingspan-goals .
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o wingspan-scoring .
 
 # Stage 2: Create minimal runtime image
 FROM registry.access.redhat.com/ubi10-minimal:10.0
@@ -31,10 +31,10 @@ RUN chown 1000:0 /app
 USER 1000
 
 # Copy the binary from builder
-COPY --from=builder /app/wingspan-goals .
+COPY --from=builder /app/wingspan-scoring .
 
 # Expose port 8080
 EXPOSE 8080
 
 # Run the application
-CMD ["./wingspan-goals"]
+CMD ["./wingspan-scoring"]

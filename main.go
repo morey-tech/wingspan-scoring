@@ -7,9 +7,9 @@ import (
 	"log"
 	"net/http"
 	"strconv"
-	"wingspan-goals/db"
-	"wingspan-goals/goals"
-	"wingspan-goals/scoring"
+	"wingspan-scoring/db"
+	"wingspan-scoring/goals"
+	"wingspan-scoring/scoring"
 )
 
 //go:embed templates static
@@ -61,7 +61,7 @@ func main() {
 	http.HandleFunc("/api/games/", handleGameRoute)
 	http.HandleFunc("/api/stats/", handleGetPlayerStats)
 
-	log.Println("Starting Wingspan Goals server on :8080")
+	log.Println("Starting Wingspan Scoring server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", nil))
 }
 

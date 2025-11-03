@@ -5,7 +5,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"time"
-	"wingspan-goals/scoring"
+	"wingspan-scoring/scoring"
 )
 
 // GameResult represents a saved game result
