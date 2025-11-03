@@ -1,5 +1,118 @@
 /* Game History Page Styles */
 
+/* Player Stats Section */
+.player-stats-section {
+    margin-bottom: 40px;
+    background: white;
+    border-radius: 12px;
+    padding: 24px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.stats-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 24px;
+    padding-bottom: 16px;
+    border-bottom: 2px solid #e0e0e0;
+}
+
+.stats-header h2 {
+    margin: 0;
+    color: #333;
+}
+
+.player-selector {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.player-selector label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+}
+
+.player-dropdown {
+    padding: 8px 16px;
+    border: 2px solid #e0e0e0;
+    border-radius: 6px;
+    font-size: 14px;
+    color: #333;
+    background: white;
+    cursor: pointer;
+    transition: border-color 0.2s;
+    min-width: 200px;
+}
+
+.player-dropdown:hover {
+    border-color: #667eea;
+}
+
+.player-dropdown:focus {
+    outline: none;
+    border-color: #667eea;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.stats-content {
+    min-height: 150px;
+}
+
+.stats-empty-state {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    min-height: 150px;
+    color: #999;
+    font-size: 16px;
+    font-style: italic;
+}
+
+.stats-cards {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 20px;
+}
+
+.stat-card {
+    background: linear-gradient(135deg, #f8f9ff 0%, #ffffff 100%);
+    border: 2px solid #e8eaf6;
+    border-radius: 12px;
+    padding: 24px;
+    text-align: center;
+    transition: transform 0.2s, box-shadow 0.2s, border-color 0.2s;
+}
+
+.stat-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 6px 20px rgba(102, 126, 234, 0.15);
+    border-color: #667eea;
+}
+
+.stat-icon {
+    font-size: 32px;
+    margin-bottom: 12px;
+}
+
+.stat-value {
+    font-size: 36px;
+    font-weight: 700;
+    color: #667eea;
+    margin-bottom: 8px;
+    line-height: 1;
+}
+
+.stat-label {
+    font-size: 14px;
+    font-weight: 500;
+    color: #666;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+}
+
 .history-section {
     margin-bottom: 40px;
 }
@@ -439,6 +552,45 @@
 
 /* Responsive */
 @media (max-width: 768px) {
+    .stats-header {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 16px;
+    }
+
+    .player-selector {
+        width: 100%;
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 8px;
+    }
+
+    .player-dropdown {
+        width: 100%;
+    }
+
+    .stats-cards {
+        grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+        gap: 12px;
+    }
+
+    .stat-card {
+        padding: 16px;
+    }
+
+    .stat-icon {
+        font-size: 24px;
+        margin-bottom: 8px;
+    }
+
+    .stat-value {
+        font-size: 28px;
+    }
+
+    .stat-label {
+        font-size: 12px;
+    }
+
     .games-list {
         grid-template-columns: 1fr;
     }

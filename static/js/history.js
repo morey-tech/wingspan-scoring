@@ -9,6 +9,7 @@ let gameToDelete = null;
 document.addEventListener('DOMContentLoaded', () => {
     loadGames();
     initializeEventListeners();
+    initializePlayerStats();
 });
 
 function initializeEventListeners() {
@@ -394,4 +395,134 @@ async function confirmDelete() {
         console.error('Error deleting game:', error);
         alert('Failed to delete game. Please try again.');
     }
+}
+
+// ===== Player Stats Functions =====
+
+function initializePlayerStats() {
+    const playerSelect = document.getElementById('playerSelect');
+    if (playerSelect) {
+        playerSelect.addEventListener('change', handlePlayerSelection);
+    }
+
+    // Populate player dropdown after games load
+    populatePlayerDropdown();
+}
+
+async function populatePlayerDropdown() {
+    try {
+        // Fetch all games to extract unique player names
+        const response = await fetch('/api/games?limit=1000&offset=0');
+
+        if (!response.ok) {
+            throw new Error('Failed to load games for player list');
+        }
+
+        const data = await response.json();
+        const playerSet = new Set();
+
+        // Extract all unique player names from games
+        if (data.games) {
+            data.games.forEach(game => {
+                if (game.players) {
+                    game.players.forEach(player => {
+                        playerSet.add(player.playerName);
+                    });
+                }
+            });
+        }
+
+        // Sort players alphabetically
+        const players = Array.from(playerSet).sort();
+
+        // Populate dropdown
+        const playerSelect = document.getElementById('playerSelect');
+        if (playerSelect && players.length > 0) {
+            // Keep the default option and add players
+            players.forEach(playerName => {
+                const option = document.createElement('option');
+                option.value = playerName;
+                option.textContent = playerName;
+                playerSelect.appendChild(option);
+            });
+        }
+
+    } catch (error) {
+        console.error('Error populating player dropdown:', error);
+    }
+}
+
+async function handlePlayerSelection(event) {
+    const playerName = event.target.value;
+
+    if (!playerName) {
+        showEmptyStatsState();
+        return;
+    }
+
+    await loadPlayerStats(playerName);
+}
+
+async function loadPlayerStats(playerName) {
+    const statsContent = document.getElementById('statsContent');
+    statsContent.innerHTML = '<div class="loading">Loading player statistics...</div>';
+
+    try {
+        const response = await fetch(`/api/stats/${encodeURIComponent(playerName)}`);
+
+        if (!response.ok) {
+            throw new Error('Failed to load player stats');
+        }
+
+        const stats = await response.json();
+        displayPlayerStats(playerName, stats);
+
+    } catch (error) {
+        console.error('Error loading player stats:', error);
+        statsContent.innerHTML = '<div class="error">Failed to load player statistics. Please try again.</div>';
+    }
+}
+
+function displayPlayerStats(playerName, stats) {
+    const statsContent = document.getElementById('statsContent');
+
+    const winRate = stats.winRate ? stats.winRate.toFixed(1) : '0.0';
+    const avgScore = stats.averageScore ? stats.averageScore.toFixed(1) : '0.0';
+
+    statsContent.innerHTML = `
+        <div class="stats-cards">
+            <div class="stat-card">
+                <div class="stat-icon">🎮</div>
+                <div class="stat-value">${stats.gamesPlayed || 0}</div>
+                <div class="stat-label">Games Played</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">🏆</div>
+                <div class="stat-value">${stats.wins || 0}</div>
+                <div class="stat-label">Total Wins</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">📊</div>
+                <div class="stat-value">${winRate}%</div>
+                <div class="stat-label">Win Rate</div>
+            </div>
+
+            <div class="stat-card">
+                <div class="stat-icon">⭐</div>
+                <div class="stat-value">${avgScore}</div>
+                <div class="stat-label">Average Score</div>
+            </div>
+        </div>
+    `;
+}
+
+function showEmptyStatsState() {
+    const statsContent = document.getElementById('statsContent');
+    statsContent.innerHTML = `
+        <div class="stats-empty-state">
+            <p>Select a player to view their statistics</p>
+        </div>
+    `;
 }
