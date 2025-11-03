@@ -539,25 +539,37 @@ function showPlayerMenu(box, round, score, position) {
 function toggleCubePlacement(round, score, position, playerColor) {
     const key = `${round}-${score}-${position}`;
 
-    // First, remove this player from any other box in this round
-    for (const k in gameState.cubePlacements) {
-        if (k.startsWith(`${round}-`)) {
-            const index = gameState.cubePlacements[k].indexOf(playerColor);
-            if (index > -1) {
-                gameState.cubePlacements[k].splice(index, 1);
-                if (gameState.cubePlacements[k].length === 0) {
-                    delete gameState.cubePlacements[k];
+    // Check if player is already in this box
+    const currentPlacements = gameState.cubePlacements[key] || [];
+    const isAlreadyPlaced = currentPlacements.includes(playerColor);
+
+    if (isAlreadyPlaced) {
+        // Deselect: Remove player from this box
+        const index = currentPlacements.indexOf(playerColor);
+        if (index > -1) {
+            currentPlacements.splice(index, 1);
+            if (currentPlacements.length === 0) {
+                delete gameState.cubePlacements[key];
+            }
+        }
+    } else {
+        // Select/Move: Remove from other boxes in this round, then add to this box
+        for (const k in gameState.cubePlacements) {
+            if (k.startsWith(`${round}-`)) {
+                const index = gameState.cubePlacements[k].indexOf(playerColor);
+                if (index > -1) {
+                    gameState.cubePlacements[k].splice(index, 1);
+                    if (gameState.cubePlacements[k].length === 0) {
+                        delete gameState.cubePlacements[k];
+                    }
                 }
             }
         }
-    }
 
-    // Add to the new box
-    if (!gameState.cubePlacements[key]) {
-        gameState.cubePlacements[key] = [];
-    }
-
-    if (!gameState.cubePlacements[key].includes(playerColor)) {
+        // Add to the new box
+        if (!gameState.cubePlacements[key]) {
+            gameState.cubePlacements[key] = [];
+        }
         gameState.cubePlacements[key].push(playerColor);
     }
 
