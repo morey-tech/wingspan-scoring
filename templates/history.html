@@ -3,18 +3,28 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Wingspan - Game History</title>
+    <title>{{.PageTitle}} - Wingspan Scoring</title>
     <link rel="stylesheet" href="/static/css/styles.css">
     <link rel="stylesheet" href="/static/css/history.css">
 </head>
 <body>
     <div class="container">
         <header>
-            <h1>Wingspan Game History</h1>
-            <div class="controls">
-                <a href="/" class="btn-secondary">Round Goals</a>
-                <a href="/game-end" class="btn-secondary">Game End Calculator</a>
+            <div class="header-title-section">
+                <h1 class="main-title">Wingspan Scoring</h1>
+                <h2 class="page-subtitle">{{.PageSubtitle}}</h2>
             </div>
+            <nav class="header-nav">
+                {{if ne .CurrentPage "home"}}
+                <a href="/" class="nav-link">Round Goals</a>
+                {{end}}
+                {{if ne .CurrentPage "game-end"}}
+                <a href="/game-end" class="nav-link">Game End Calculator</a>
+                {{end}}
+                {{if ne .CurrentPage "history"}}
+                <a href="/history" class="nav-link">Game History</a>
+                {{end}}
+            </nav>
         </header>
 
         <div class="history-section">

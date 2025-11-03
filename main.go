@@ -26,12 +26,15 @@ func init() {
 }
 
 type PageData struct {
-	Goals     goals.RoundGoals
-	HasGoals  bool
-	BaseGame  bool
-	European  bool
-	Oceania   bool
-	NumPlayers int
+	Goals        goals.RoundGoals
+	HasGoals     bool
+	BaseGame     bool
+	European     bool
+	Oceania      bool
+	NumPlayers   int
+	PageTitle    string
+	PageSubtitle string
+	CurrentPage  string
 }
 
 func main() {
@@ -72,12 +75,15 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 	}
 
 	data := PageData{
-		Goals:     selectedGoals,
-		HasGoals:  true,
-		BaseGame:  true,
-		European:  true,
-		Oceania:   true,
-		NumPlayers: 4, // Default to 4 players
+		Goals:        selectedGoals,
+		HasGoals:     true,
+		BaseGame:     true,
+		European:     true,
+		Oceania:      true,
+		NumPlayers:   4, // Default to 4 players
+		PageTitle:    "Round Goals",
+		PageSubtitle: "Round End Goals",
+		CurrentPage:  "home",
 	}
 
 	err = tmpl.ExecuteTemplate(w, "index.html", data)
@@ -163,10 +169,13 @@ func handleCalculateScores(w http.ResponseWriter, r *http.Request) {
 
 func handleGameEnd(w http.ResponseWriter, r *http.Request) {
 	data := PageData{
-		BaseGame:  true,
-		European:  true,
-		Oceania:   true,
-		NumPlayers: 4, // Default to 4 players
+		BaseGame:     true,
+		European:     true,
+		Oceania:      true,
+		NumPlayers:   4, // Default to 4 players
+		PageTitle:    "Game End Calculator",
+		PageSubtitle: "Game End Calculator",
+		CurrentPage:  "game-end",
 	}
 
 	err := tmpl.ExecuteTemplate(w, "game-end.html", data)
@@ -221,10 +230,13 @@ func handleCalculateGameEnd(w http.ResponseWriter, r *http.Request) {
 
 func handleHistory(w http.ResponseWriter, r *http.Request) {
 	data := PageData{
-		BaseGame:  true,
-		European:  true,
-		Oceania:   true,
-		NumPlayers: 4,
+		BaseGame:     true,
+		European:     true,
+		Oceania:      true,
+		NumPlayers:   4,
+		PageTitle:    "Game History",
+		PageSubtitle: "Game History",
+		CurrentPage:  "history",
 	}
 
 	err := tmpl.ExecuteTemplate(w, "history.html", data)
