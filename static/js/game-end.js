@@ -94,22 +94,25 @@ function generatePlayerRows() {
             </td>
             <td class="score-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="birdPoints">
             </td>
             <td class="score-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="bonusCards">
             </td>
             <td class="score-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input"
                        min="0"
                        value="${roundGoalScore}"
@@ -118,57 +121,64 @@ function generatePlayerRows() {
             </td>
             <td class="score-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="eggs">
             </td>
             <td class="score-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="cachedFood">
             </td>
             <td class="score-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="tuckedCards">
             </td>
             <td class="score-cell nectar-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input nectar-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="nectarForest">
             </td>
             <td class="score-cell nectar-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input nectar-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="nectarGrassland">
             </td>
             <td class="score-cell nectar-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input nectar-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="nectarWetland">
             </td>
             <td class="score-cell tiebreaker-cell">
                 <input type="number"
+                       inputmode="numeric"
                        class="score-input tiebreaker-input"
                        min="0"
-                       value="0"
+                       placeholder="0"
                        data-player="${i}"
                        data-field="unusedFood">
             </td>
@@ -183,6 +193,102 @@ function generatePlayerRows() {
     // Add event listeners to all inputs
     document.querySelectorAll('.score-input, .player-name-input').forEach(input => {
         input.addEventListener('change', saveGameState);
+    });
+
+    // Add auto-select on focus for score inputs
+    document.querySelectorAll('.score-input').forEach(input => {
+        input.addEventListener('focus', (e) => {
+            // Only auto-select if the input has a value (for editing existing scores)
+            if (e.target.value) {
+                e.target.select();
+            }
+        });
+    });
+
+    // Add horizontal keyboard navigation (Tab across players, Enter to advance)
+    document.querySelectorAll('.score-input').forEach(input => {
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Tab' || e.key === 'Enter') {
+                const currentField = e.target.dataset.field;
+                const currentPlayer = parseInt(e.target.dataset.player);
+
+                // Find all inputs with the same field (same category)
+                const sameFieldInputs = Array.from(document.querySelectorAll(`.score-input[data-field="${currentField}"]`))
+                    .sort((a, b) => parseInt(a.dataset.player) - parseInt(b.dataset.player));
+
+                const currentIndex = sameFieldInputs.findIndex(inp =>
+                    parseInt(inp.dataset.player) === currentPlayer
+                );
+
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+
+                    // Move to next player in same category, or first player of next category
+                    if (currentIndex < sameFieldInputs.length - 1) {
+                        // Next player in same category
+                        sameFieldInputs[currentIndex + 1].focus();
+                    } else {
+                        // Last player in this category - move to first player of next category
+                        const allFieldTypes = ['birdPoints', 'bonusCards', 'roundGoals', 'eggs',
+                                              'cachedFood', 'tuckedCards', 'nectarForest',
+                                              'nectarGrassland', 'nectarWetland', 'unusedFood'];
+                        const currentFieldIndex = allFieldTypes.indexOf(currentField);
+
+                        if (currentFieldIndex < allFieldTypes.length - 1) {
+                            const nextField = allFieldTypes[currentFieldIndex + 1];
+                            const nextInput = document.querySelector(`.score-input[data-field="${nextField}"][data-player="1"]`);
+                            if (nextInput && nextInput.offsetParent !== null) { // Check if visible
+                                nextInput.focus();
+                            }
+                        }
+                    }
+                } else if (e.key === 'Tab' && !e.shiftKey) {
+                    // Tab without shift - move to next player in same category
+                    e.preventDefault();
+
+                    if (currentIndex < sameFieldInputs.length - 1) {
+                        sameFieldInputs[currentIndex + 1].focus();
+                    } else {
+                        // Last player - move to first player of next category
+                        const allFieldTypes = ['birdPoints', 'bonusCards', 'roundGoals', 'eggs',
+                                              'cachedFood', 'tuckedCards', 'nectarForest',
+                                              'nectarGrassland', 'nectarWetland', 'unusedFood'];
+                        const currentFieldIndex = allFieldTypes.indexOf(currentField);
+
+                        if (currentFieldIndex < allFieldTypes.length - 1) {
+                            const nextField = allFieldTypes[currentFieldIndex + 1];
+                            const nextInput = document.querySelector(`.score-input[data-field="${nextField}"][data-player="1"]`);
+                            if (nextInput && nextInput.offsetParent !== null) { // Check if visible
+                                nextInput.focus();
+                            }
+                        }
+                    }
+                } else if (e.key === 'Tab' && e.shiftKey) {
+                    // Shift+Tab - move to previous player in same category
+                    e.preventDefault();
+
+                    if (currentIndex > 0) {
+                        sameFieldInputs[currentIndex - 1].focus();
+                    } else {
+                        // First player - move to last player of previous category
+                        const allFieldTypes = ['birdPoints', 'bonusCards', 'roundGoals', 'eggs',
+                                              'cachedFood', 'tuckedCards', 'nectarForest',
+                                              'nectarGrassland', 'nectarWetland', 'unusedFood'];
+                        const currentFieldIndex = allFieldTypes.indexOf(currentField);
+
+                        if (currentFieldIndex > 0) {
+                            const prevField = allFieldTypes[currentFieldIndex - 1];
+                            const prevInputs = Array.from(document.querySelectorAll(`.score-input[data-field="${prevField}"]`))
+                                .filter(inp => inp.offsetParent !== null); // Only visible inputs
+                            const lastPrevInput = prevInputs[prevInputs.length - 1];
+                            if (lastPrevInput) {
+                                lastPrevInput.focus();
+                            }
+                        }
+                    }
+                }
+            }
+        });
     });
 
     // Apply saved state
@@ -366,7 +472,7 @@ function clearAllScores() {
     }
 
     document.querySelectorAll('.score-input').forEach(input => {
-        input.value = '0';
+        input.value = '';
     });
 
     document.querySelectorAll('.total-display').forEach(cell => {
