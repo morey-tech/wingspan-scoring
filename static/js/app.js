@@ -764,6 +764,10 @@ function updateGoalDisplay(goals) {
 
 // Toggle between blue and green scoring modes
 function toggleScoringMode() {
+    let isConfirmed = confirm("Are you sure you want to switch sides? This will remove all cube placements!")
+    if(!isConfirmed){
+        return
+    }
     const goalCard = document.getElementById('goalCard');
     const toggleBtn = document.getElementById('toggleMode');
     const blueTracks = goalCard.querySelectorAll('.blue-track');
