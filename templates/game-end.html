@@ -25,25 +25,36 @@
                 <a href="/history" class="nav-link">Game History</a>
                 {{end}}
             </nav>
-            <div class="controls">
-                <label class="oceania-toggle">
-                    <input type="checkbox" id="oceaniaToggle" checked>
-                    Include Oceania (Nectar)
-                </label>
-            </div>
         </header>
 
-        <div class="player-setup">
-            <h2>Number of Players</h2>
-            <div class="player-config">
-                <label>
-                    <select id="numPlayers">
-                        <option value="2">2 Players</option>
-                        <option value="3">3 Players</option>
-                        <option value="4" selected>4 Players</option>
-                        <option value="5">5 Players</option>
-                    </select>
-                </label>
+        <div class="setup-container">
+            <div class="setup-left">
+                <div class="player-setup">
+                    <h2>Number of Players</h2>
+                    <div class="player-config">
+                        <label>
+                            <select id="numPlayers">
+                                <option value="2">2 Players</option>
+                                <option value="3">3 Players</option>
+                                <option value="4" selected>4 Players</option>
+                                <option value="5">5 Players</option>
+                            </select>
+                        </label>
+                    </div>
+                </div>
+            </div>
+
+            <div class="setup-right">
+                <div class="game-controls-card">
+                    <h2>Game Options</h2>
+
+                    <div class="controls-section">
+                        <h3>Expansion</h3>
+                        <div class="expansion-controls">
+                            <label><input type="checkbox" id="oceaniaToggle" checked> Oceania (Nectar)</label>
+                        </div>
+                    </div>
+                </div>
             </div>
         </div>
 
