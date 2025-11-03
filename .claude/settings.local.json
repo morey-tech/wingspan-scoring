@@ -6,7 +6,9 @@
       "Bash(killall:*)",
       "Bash(go build:*)",
       "Bash(./wingspan-scoring)",
-      "Bash(go get:*)"
+      "Bash(go get:*)",
+      "Bash(node --version:*)",
+      "Bash(npx:*)"
     ],
     "deny": [],
     "ask": []
