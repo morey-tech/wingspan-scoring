@@ -24,18 +24,11 @@
                 <a href="/history" class="nav-link">Game History</a>
                 {{end}}
             </nav>
-            <div class="controls">
-                <div class="expansion-controls">
-                    <label><input type="checkbox" id="base" checked> Base Game</label>
-                    <label><input type="checkbox" id="european" checked> European</label>
-                    <label><input type="checkbox" id="oceania" checked> Oceania</label>
-                </div>
-                <button id="newGame" class="btn-primary">New Game</button>
-                <button id="toggleMode" class="btn-secondary">Switch to Green Side</button>
-            </div>
         </header>
 
-        <div class="player-setup">
+        <div class="setup-container">
+            <div class="setup-left">
+                <div class="player-setup">
             <h2>Player Setup</h2>
             <div class="player-config">
                 <label>
@@ -50,6 +43,32 @@
             </div>
             <div id="playerList" class="player-list">
                 <!-- Players will be dynamically generated here -->
+            </div>
+                </div>
+            </div>
+
+            <div class="setup-right">
+                <div class="game-controls-card">
+                    <h2>Game Controls</h2>
+
+                    <div class="controls-section">
+                        <h3>Expansions</h3>
+                        <div class="expansion-controls">
+                            <label><input type="checkbox" id="base" checked> Base Game</label>
+                            <label><input type="checkbox" id="european" checked> European</label>
+                            <label><input type="checkbox" id="oceania" checked> Oceania</label>
+                        </div>
+                    </div>
+
+                    <div class="controls-section">
+                        <h3>Goal Side</h3>
+                        <button id="toggleMode" class="btn-secondary btn-full-width">Switch to Green Side</button>
+                    </div>
+
+                    <div class="controls-section">
+                        <button id="newGame" class="btn-primary btn-full-width">New Game</button>
+                    </div>
+                </div>
             </div>
         </div>
 
