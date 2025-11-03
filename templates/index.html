@@ -50,21 +50,21 @@
                     <h2>Game Controls</h2>
 
                     <div class="controls-section">
+                        <button id="newGame" class="btn-primary btn-full-width">New Game</button>
+                    </div>
+
+                    <div class="controls-section">
                         <h3>Expansions</h3>
                         <div class="expansion-controls">
                             <label><input type="checkbox" id="base" checked> Base Game</label>
                             <label><input type="checkbox" id="european" checked> European</label>
-                            <label><input type="checkbox" id="oceania" checked> Oceania</label>
+                            <label><input type="checkbox" id="oceania" checked> Oceania (Nectar)</label>
                         </div>
                     </div>
 
                     <div class="controls-section">
-                        <h3>Goal Side</h3>
+                        <h3>Round End Goal Side</h3>
                         <button id="toggleMode" class="btn-secondary btn-full-width">Switch to Green Side</button>
-                    </div>
-
-                    <div class="controls-section">
-                        <button id="newGame" class="btn-primary btn-full-width">New Game</button>
                     </div>
                 </div>
             </div>
@@ -198,15 +198,15 @@
 
         <!-- Score Tracker -->
         <div class="score-tracker" id="scoreTracker">
-            <h2>Score Tracker</h2>
+            <h2>Round End Scoring</h2>
             <table class="score-table">
                 <thead>
                     <tr>
                         <th>Player</th>
-                        <th>R1</th>
-                        <th>R2</th>
-                        <th>R3</th>
-                        <th>R4</th>
+                        <th>Round 1</th>
+                        <th>Round 2</th>
+                        <th>Round 3</th>
+                        <th>Round 4</th>
                         <th>Total</th>
                     </tr>
                 </thead>
@@ -219,7 +219,7 @@
 
         <!-- Game End Scoring Section -->
         <div class="scoring-section">
-            <h2>End-Game Scoring</h2>
+            <h2>Game End Scoring</h2>
             <p class="scoring-instructions">Enter each player's scores for all categories. Nectar points will be calculated automatically based on competitive placement.</p>
             <p class="nectar-rules"><strong>Nectar Tie Rule:</strong> Players who tie split and average their placement points (rounded down). Example: 2 players tie for 1st = (5+2)/2 = 3 points each.</p>
 
