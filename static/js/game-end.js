@@ -18,6 +18,8 @@ let gameState = {
 
 // Initialize on page load
 document.addEventListener('DOMContentLoaded', () => {
+    // Initialize numPlayers from dropdown before loading state
+    gameState.numPlayers = parseInt(document.getElementById('numPlayers').value);
     loadGameState();
     initializeEventListeners();
     generatePlayerRows();
@@ -600,6 +602,11 @@ function applySavedState() {
             // Skip roundGoals if we have data from the goals page
             if (field === 'roundGoals' && gameState.roundGoalScores && gameState.roundGoalScores.length > 0) {
                 return; // Don't overwrite round goals from goals page
+            }
+
+            // Skip name if we have data from the goals page
+            if (field === 'name' && gameState.playerNames && gameState.playerNames.length > 0) {
+                return; // Don't overwrite player names from goals page
             }
 
             const input = document.querySelector(`input[data-player="${playerNum}"][data-field="${field}"]`);
