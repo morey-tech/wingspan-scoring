@@ -201,8 +201,37 @@ document.addEventListener('DOMContentLoaded', function() {
     expansionCheckboxes.forEach(id => {
         const checkbox = document.getElementById(id);
         if (checkbox) {
-            checkbox.addEventListener('change', async () => {
+            checkbox.addEventListener('change', async (e) => {
                 await fetchAllGoals();
+
+                // Special handling for Oceania checkbox - also controls nectar visibility
+                if (id === 'oceania') {
+                    gameEndState.includeOceania = e.target.checked;
+                    const nectarHeaders = document.querySelectorAll('.nectar-header');
+                    const nectarCells = document.querySelectorAll('.nectar-cell');
+
+                    nectarHeaders.forEach(header => {
+                        header.style.display = gameEndState.includeOceania ? '' : 'none';
+                    });
+
+                    nectarCells.forEach(cell => {
+                        cell.style.display = gameEndState.includeOceania ? '' : 'none';
+                    });
+
+                    // Hide/show nectar rules
+                    const nectarRules = document.querySelector('.nectar-rules');
+                    if (nectarRules) {
+                        nectarRules.style.display = gameEndState.includeOceania ? '' : 'none';
+                    }
+
+                    // Hide/show nectar breakdown in results
+                    const nectarBreakdown = document.getElementById('nectarBreakdown');
+                    if (nectarBreakdown) {
+                        nectarBreakdown.style.display = gameEndState.includeOceania ? '' : 'none';
+                    }
+
+                    saveGameEndState();
+                }
             });
         }
     });
@@ -891,13 +920,9 @@ let gameEndState = {
 
 // Initialize game end section
 function initializeGameEndSection() {
-    const oceaniaToggle = document.getElementById('oceaniaToggle');
     const calculateBtn = document.getElementById('calculateBtn');
     const clearGameEndBtn = document.getElementById('clearGameEndBtn');
 
-    if (oceaniaToggle) {
-        oceaniaToggle.addEventListener('change', handleOceaniaToggle);
-    }
     if (calculateBtn) {
         calculateBtn.addEventListener('click', calculateGameEndScores);
     }
@@ -910,35 +935,6 @@ function initializeGameEndSection() {
 
     // Generate player rows for game end table
     generateGameEndPlayerRows();
-}
-
-// Handle Oceania toggle
-function handleOceaniaToggle(e) {
-    gameEndState.includeOceania = e.target.checked;
-    const nectarHeaders = document.querySelectorAll('.nectar-header');
-    const nectarCells = document.querySelectorAll('.nectar-cell');
-
-    nectarHeaders.forEach(header => {
-        header.style.display = gameEndState.includeOceania ? '' : 'none';
-    });
-
-    nectarCells.forEach(cell => {
-        cell.style.display = gameEndState.includeOceania ? '' : 'none';
-    });
-
-    // Hide/show nectar rules
-    const nectarRules = document.querySelector('.nectar-rules');
-    if (nectarRules) {
-        nectarRules.style.display = gameEndState.includeOceania ? '' : 'none';
-    }
-
-    // Hide/show nectar breakdown in results
-    const nectarBreakdown = document.getElementById('nectarBreakdown');
-    if (nectarBreakdown) {
-        nectarBreakdown.style.display = gameEndState.includeOceania ? '' : 'none';
-    }
-
-    saveGameEndState();
 }
 
 // Generate player rows for game end table
@@ -1346,13 +1342,43 @@ function loadGameEndState() {
             gameEndState.includeOceania = state.includeOceania !== undefined ? state.includeOceania : true;
             gameEndState.players = state.players || [];
 
-            // Update UI
-            const oceaniaToggle = document.getElementById('oceaniaToggle');
-            if (oceaniaToggle) {
-                oceaniaToggle.checked = gameEndState.includeOceania;
+            // Update UI - sync with Oceania checkbox in Round Goals section
+            const oceaniaCheckbox = document.getElementById('oceania');
+            if (oceaniaCheckbox) {
+                oceaniaCheckbox.checked = gameEndState.includeOceania;
+
+                // Apply nectar visibility based on loaded state
+                const nectarHeaders = document.querySelectorAll('.nectar-header');
+                const nectarCells = document.querySelectorAll('.nectar-cell');
+
+                nectarHeaders.forEach(header => {
+                    header.style.display = gameEndState.includeOceania ? '' : 'none';
+                });
+
+                nectarCells.forEach(cell => {
+                    cell.style.display = gameEndState.includeOceania ? '' : 'none';
+                });
+
+                // Hide/show nectar rules
+                const nectarRules = document.querySelector('.nectar-rules');
+                if (nectarRules) {
+                    nectarRules.style.display = gameEndState.includeOceania ? '' : 'none';
+                }
+
+                // Hide/show nectar breakdown in results
+                const nectarBreakdown = document.getElementById('nectarBreakdown');
+                if (nectarBreakdown) {
+                    nectarBreakdown.style.display = gameEndState.includeOceania ? '' : 'none';
+                }
             }
         } catch (error) {
             console.error('Error loading game end state:', error);
+        }
+    } else {
+        // No saved state - sync with current Oceania checkbox state
+        const oceaniaCheckbox = document.getElementById('oceania');
+        if (oceaniaCheckbox) {
+            gameEndState.includeOceania = oceaniaCheckbox.checked;
         }
     }
 }
