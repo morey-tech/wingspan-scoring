@@ -949,6 +949,12 @@ function generateGameEndPlayerRows() {
     tbody.innerHTML = '';
     const numPlayers = gameState.players.length;
 
+    // Helper function to calculate column-major tabindex
+    // This makes tab navigation go down columns (between players) instead of across rows
+    const getTabIndex = (playerIndex, columnIndex) => {
+        return (columnIndex * numPlayers) + playerIndex + 1;
+    };
+
     for (let i = 0; i < numPlayers; i++) {
         const player = gameState.players[i];
         const playerNum = i + 1;
@@ -975,6 +981,7 @@ function generateGameEndPlayerRows() {
                        class="score-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 0)}"
                        data-player="${playerNum}"
                        data-field="birdPoints">
             </td>
@@ -984,6 +991,7 @@ function generateGameEndPlayerRows() {
                        class="score-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 1)}"
                        data-player="${playerNum}"
                        data-field="bonusCards">
             </td>
@@ -996,6 +1004,7 @@ function generateGameEndPlayerRows() {
                        data-player="${playerNum}"
                        data-field="roundGoals"
                        readonly
+                       tabindex="-1"
                        style="background-color: #f0f0f0;">
             </td>
             <td class="score-cell">
@@ -1004,6 +1013,7 @@ function generateGameEndPlayerRows() {
                        class="score-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 2)}"
                        data-player="${playerNum}"
                        data-field="eggs">
             </td>
@@ -1013,6 +1023,7 @@ function generateGameEndPlayerRows() {
                        class="score-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 3)}"
                        data-player="${playerNum}"
                        data-field="cachedFood">
             </td>
@@ -1022,6 +1033,7 @@ function generateGameEndPlayerRows() {
                        class="score-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 4)}"
                        data-player="${playerNum}"
                        data-field="tuckedCards">
             </td>
@@ -1031,6 +1043,7 @@ function generateGameEndPlayerRows() {
                        class="score-input nectar-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 5)}"
                        data-player="${playerNum}"
                        data-field="nectarForest">
             </td>
@@ -1040,6 +1053,7 @@ function generateGameEndPlayerRows() {
                        class="score-input nectar-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 6)}"
                        data-player="${playerNum}"
                        data-field="nectarGrassland">
             </td>
@@ -1049,6 +1063,7 @@ function generateGameEndPlayerRows() {
                        class="score-input nectar-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 7)}"
                        data-player="${playerNum}"
                        data-field="nectarWetland">
             </td>
@@ -1058,6 +1073,7 @@ function generateGameEndPlayerRows() {
                        class="score-input tiebreaker-input game-end-input"
                        min="0"
                        placeholder="0"
+                       tabindex="${getTabIndex(i, 8)}"
                        data-player="${playerNum}"
                        data-field="unusedFood">
             </td>
@@ -1075,6 +1091,18 @@ function generateGameEndPlayerRows() {
         input.addEventListener('focus', (e) => {
             if (e.target.value) {
                 e.target.select();
+            }
+        });
+        // Add Enter key handling to navigate like Tab
+        input.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                const currentTabIndex = parseInt(input.getAttribute('tabindex'));
+                // Find the next input with the next tabindex
+                const nextInput = document.querySelector(`.game-end-input[tabindex="${currentTabIndex + 1}"]`);
+                if (nextInput) {
+                    nextInput.focus();
+                }
             }
         });
     });
