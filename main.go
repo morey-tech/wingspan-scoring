@@ -59,6 +59,7 @@ func main() {
 	http.HandleFunc("/api/games", handleGetGames)
 	http.HandleFunc("/api/games/", handleGameRoute)
 	http.HandleFunc("/api/stats/", handleGetPlayerStats)
+	http.HandleFunc("/api/leaderboard", handleGetLeaderboard)
 
 	log.Println("Starting Wingspan Scoring server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", loggingMiddleware(http.DefaultServeMux)))
@@ -352,6 +353,24 @@ func handleGetPlayerStats(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(stats)
+}
+
+func handleGetLeaderboard(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get leaderboard stats from database
+	leaderboard, err := db.GetLeaderboardStats()
+	if err != nil {
+		log.Printf("Failed to get leaderboard stats: %v", err)
+		http.Error(w, "Failed to retrieve leaderboard", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(leaderboard)
 }
 
 // Helper to parse int with default
