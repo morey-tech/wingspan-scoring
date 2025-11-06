@@ -6,6 +6,89 @@
 - Never commit directly to `main` branch
 - Branch naming: use descriptive names (e.g., `feature/score-calculator`, `fix/round-goals-bug`)
 
+## GitHub CLI Workflow
+
+The GitHub CLI (`gh`) is available in the devcontainer for streamlined PR management.
+
+### Authentication
+
+First-time setup requires authentication:
+```bash
+gh auth login
+```
+
+Follow the interactive prompts to authenticate via browser or token.
+
+### Creating Pull Requests
+
+After committing your changes to a feature branch, create a PR:
+
+```bash
+# Basic PR creation (opens editor for title/description)
+gh pr create
+
+# Create PR with inline title and body
+gh pr create --title "feat: add score validation" --body "Implements input validation for bird scores"
+
+# Create PR and open in browser
+gh pr create --web
+```
+
+### Auto-Merge with Squash Strategy
+
+Enable auto-merge to automatically merge PRs when all checks pass:
+
+```bash
+# Enable auto-merge with squash strategy on current branch
+gh pr merge --auto --squash
+
+# Enable auto-merge on a specific PR number
+gh pr merge 42 --auto --squash
+
+# Combine PR creation with auto-merge
+gh pr create --title "fix: correct bonus tile calculation" \
+  --body "Fixes issue with end-of-round bonus scoring" && \
+gh pr merge --auto --squash
+```
+
+### Example Workflow
+
+Complete workflow from feature to auto-merged PR:
+
+```bash
+# 1. Create and switch to feature branch
+git checkout -b feature/improve-ui
+
+# 2. Make changes and commit
+git add .
+git commit -m "feat: improve score entry form layout"
+
+# 3. Push branch to remote
+git push -u origin feature/improve-ui
+
+# 4. Create PR with auto-merge enabled
+gh pr create \
+  --title "feat: improve score entry form layout" \
+  --body "Reorganizes the score entry form for better usability" && \
+gh pr merge --auto --squash
+```
+
+### Additional Commands
+
+```bash
+# View PR status
+gh pr status
+
+# List all PRs
+gh pr list
+
+# View PR details
+gh pr view [PR-number]
+
+# Check PR checks status
+gh pr checks
+```
+
 ## Commit Standards
 
 - Use conventional commit format: `type: description`

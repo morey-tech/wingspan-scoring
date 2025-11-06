@@ -15,18 +15,6 @@ on:
       - '.dockerignore'
       - '.github/workflows/container-build.yml'
   pull_request:
-    paths:
-      - '*.go'
-      - 'goals/**'
-      - 'scoring/**'
-      - 'db/**'
-      - 'static/**'
-      - 'templates/**'
-      - 'go.mod'
-      - 'go.sum'
-      - 'Containerfile'
-      - '.dockerignore'
-      - '.github/workflows/container-build.yml'
 
 env:
   REGISTRY: ghcr.io
