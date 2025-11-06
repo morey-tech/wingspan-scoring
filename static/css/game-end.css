@@ -1,16 +1,18 @@
+@import url('variables.css');
+
 /* Game End Calculator Styles */
 
 /* Main Scoring Section Card */
 .scoring-section {
-    background: rgba(255, 255, 255, 0.95);
-    border-radius: 12px;
+    background: var(--color-bg-card);
+    border-radius: var(--radius-lg);
     padding: 25px;
     margin-top: 40px;
-    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+    box-shadow: var(--shadow-lg);
 }
 
 .scoring-section h2 {
-    color: #333;
+    color: var(--color-text-primary);
     margin-top: 0;
     margin-bottom: 20px;
     font-size: 1.5em;
@@ -30,7 +32,7 @@
 
 .scoring-instructions {
     margin-bottom: 10px;
-    color: #666;
+    color: var(--color-text-secondary);
     font-size: 14px;
     text-align: center;
 }
@@ -38,10 +40,10 @@
 .nectar-rules {
     margin-bottom: 20px;
     padding: 12px 16px;
-    background: linear-gradient(135deg, #e3f2fd 0%, #f3e5f5 100%);
-    border-left: 4px solid #667eea;
-    border-radius: 6px;
-    color: #333;
+    background: linear-gradient(135deg, rgba(107, 154, 168, 0.15) 0%, rgba(184, 155, 155, 0.1) 100%);
+    border-left: 4px solid var(--color-secondary);
+    border-radius: var(--radius-sm);
+    color: var(--color-text-primary);
     font-size: 13px;
     text-align: center;
 }
@@ -50,20 +52,20 @@
 .scoring-table-wrapper {
     overflow-x: auto;
     margin-bottom: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-md);
 }
 
 .game-end-table {
     width: 100%;
     border-collapse: collapse;
-    background: white;
+    background: var(--color-bg-card);
     font-size: 13px;
 }
 
 .game-end-table thead {
-    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-    color: white;
+    background: var(--gradient-header);
+    color: var(--color-text-light);
 }
 
 .game-end-table th {
@@ -106,12 +108,12 @@
 
 /* Table Body */
 .game-end-table tbody tr {
-    border-bottom: 1px solid #e0e0e0;
-    transition: background-color 0.2s;
+    border-bottom: 1px solid var(--color-border-light);
+    transition: var(--transition-fast);
 }
 
 .game-end-table tbody tr:hover {
-    background-color: #f5f5f5;
+    background-color: var(--color-bg-secondary);
 }
 
 .game-end-table tbody tr:last-child {
@@ -119,18 +121,18 @@
 }
 
 .player-row.winner-row {
-    background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
-    border: 2px solid #ffd700;
+    background: linear-gradient(90deg, var(--color-warning-light) 0%, var(--color-bg-card) 100%);
+    border: 2px solid var(--color-warning);
 }
 
 .player-row.winner-row:hover {
-    background: linear-gradient(90deg, #fff5cc 0%, #fffef7 100%);
+    background: linear-gradient(90deg, var(--color-warning) 0%, var(--color-warning-light) 100%);
 }
 
 .game-end-table td {
     padding: 12px 8px;
     text-align: center;
-    border-right: 1px solid #f0f0f0;
+    border-right: 1px solid var(--color-border-light);
 }
 
 .game-end-table td:last-child {
@@ -153,28 +155,28 @@
     height: 16px;
     border-radius: 3px;
     border: 2px solid rgba(0, 0, 0, 0.2);
-    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15);
+    box-shadow: var(--shadow-sm);
     flex-shrink: 0;
 }
 
 .player-color-indicator.blue {
-    background: #2196F3;
+    background: var(--color-cube-blue);
 }
 
 .player-color-indicator.purple {
-    background: #9C27B0;
+    background: var(--color-cube-purple);
 }
 
 .player-color-indicator.green {
-    background: #4CAF50;
+    background: var(--color-cube-green);
 }
 
 .player-color-indicator.red {
-    background: #F44336;
+    background: var(--color-cube-red);
 }
 
 .player-color-indicator.yellow {
-    background: #FFC107;
+    background: var(--color-cube-yellow);
 }
 
 /* Input Styles */
@@ -182,39 +184,39 @@
     width: 100%;
     max-width: 150px;
     padding: 6px 10px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
     font-size: 14px;
     font-weight: 500;
 }
 
 .player-name-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(217, 181, 137, 0.1);
 }
 
 .score-input {
     width: 60px;
     padding: 6px 8px;
-    border: 1px solid #ddd;
-    border-radius: 4px;
+    border: 1px solid var(--color-border-light);
+    border-radius: var(--radius-sm);
     font-size: 13px;
     text-align: center;
 }
 
 .score-input:focus {
     outline: none;
-    border-color: #667eea;
-    box-shadow: 0 0 0 2px rgba(102, 126, 234, 0.1);
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 2px rgba(217, 181, 137, 0.1);
 }
 
 .nectar-input {
-    background-color: #f9f9ff;
+    background-color: rgba(107, 154, 168, 0.05);
 }
 
 .tiebreaker-input {
-    background-color: #f5f5f5;
+    background-color: var(--color-bg-secondary);
     font-size: 12px;
 }
 
@@ -231,17 +233,17 @@
 
 /* Total Display */
 .total-cell {
-    background-color: #f9f9f9;
+    background-color: var(--color-bg-secondary);
     font-weight: bold;
 }
 
 .total-display {
     font-size: 16px;
-    color: #333;
+    color: var(--color-text-primary);
 }
 
 .winner-row .total-display {
-    color: #d4af37;
+    color: var(--color-primary-dark);
     font-size: 18px;
 }
 
@@ -257,19 +259,19 @@
 .results-section {
     margin-top: 40px;
     padding: 24px;
-    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-    border-radius: 12px;
-    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: var(--gradient-results);
+    border-radius: var(--radius-lg);
+    box-shadow: var(--shadow-lg);
 }
 
 .results-section h2 {
     margin-top: 0;
-    color: #333;
+    color: var(--color-text-primary);
     text-align: center;
 }
 
 .results-section h3 {
-    color: #555;
+    color: var(--color-text-secondary);
     margin-bottom: 16px;
 }
 
@@ -286,17 +288,17 @@
 }
 
 .nectar-habitat {
-    background: white;
+    background: var(--color-bg-card);
     padding: 16px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .nectar-habitat h4 {
     margin-top: 0;
     margin-bottom: 12px;
     font-size: 16px;
-    color: #333;
+    color: var(--color-text-primary);
 }
 
 .nectar-result-item {
@@ -305,8 +307,8 @@
     align-items: center;
     padding: 8px 12px;
     margin-bottom: 8px;
-    border-radius: 6px;
-    background-color: #f9f9f9;
+    border-radius: var(--radius-sm);
+    background-color: var(--color-bg-secondary);
 }
 
 .nectar-result-item:last-child {
@@ -314,12 +316,12 @@
 }
 
 .nectar-result-item.first-place {
-    background: linear-gradient(90deg, #ffd700 0%, #ffed4e 100%);
+    background: linear-gradient(90deg, var(--color-warning) 0%, var(--color-warning-light) 100%);
     font-weight: 600;
 }
 
 .nectar-result-item.second-place {
-    background: linear-gradient(90deg, #c0c0c0 0%, #e0e0e0 100%);
+    background: linear-gradient(90deg, var(--color-border-medium) 0%, var(--color-border-light) 100%);
     font-weight: 500;
 }
 
@@ -329,16 +331,16 @@
 
 .nectar-result-item .nectar-count {
     font-size: 12px;
-    color: #666;
+    color: var(--color-text-secondary);
 }
 
 .nectar-result-item .nectar-points {
     font-weight: bold;
-    color: #667eea;
+    color: var(--color-secondary);
 }
 
 .no-nectar {
-    color: #999;
+    color: var(--color-text-muted);
     font-style: italic;
     text-align: center;
     padding: 16px;
@@ -346,10 +348,10 @@
 
 /* Final Rankings */
 .final-rankings {
-    background: white;
+    background: var(--color-bg-card);
     padding: 20px;
-    border-radius: 8px;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    border-radius: var(--radius-md);
+    box-shadow: var(--shadow-sm);
 }
 
 .ranking-item {
@@ -358,9 +360,9 @@
     gap: 16px;
     padding: 16px;
     margin-bottom: 12px;
-    border-radius: 8px;
-    background-color: #f9f9f9;
-    border-left: 4px solid #ddd;
+    border-radius: var(--radius-md);
+    background-color: var(--color-bg-secondary);
+    border-left: 4px solid var(--color-border-medium);
 }
 
 .ranking-item:last-child {
@@ -368,21 +370,21 @@
 }
 
 .ranking-item.winner {
-    background: linear-gradient(90deg, #fff9e6 0%, #ffffff 100%);
-    border-left-color: #ffd700;
-    box-shadow: 0 2px 8px rgba(255, 215, 0, 0.2);
+    background: linear-gradient(90deg, var(--color-warning-light) 0%, var(--color-bg-card) 100%);
+    border-left-color: var(--color-warning);
+    box-shadow: 0 2px 8px rgba(217, 181, 137, 0.3);
 }
 
 .rank-label {
     font-size: 14px;
     font-weight: 600;
     min-width: 100px;
-    color: #666;
+    color: var(--color-text-secondary);
 }
 
 .ranking-item.winner .rank-label {
     font-size: 18px;
-    color: #d4af37;
+    color: var(--color-primary-dark);
 }
 
 .player-info {
@@ -395,17 +397,17 @@
 .player-info .player-name {
     font-size: 16px;
     font-weight: 600;
-    color: #333;
+    color: var(--color-text-primary);
 }
 
 .ranking-item.winner .player-info .player-name {
     font-size: 18px;
-    color: #d4af37;
+    color: var(--color-primary-dark);
 }
 
 .player-info .player-score {
     font-size: 14px;
-    color: #666;
+    color: var(--color-text-secondary);
 }
 
 /* Responsive */
