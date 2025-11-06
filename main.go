@@ -61,7 +61,7 @@ func main() {
 	http.HandleFunc("/api/stats/", handleGetPlayerStats)
 
 	log.Println("Starting Wingspan Scoring server on :8080")
-	log.Fatal(http.ListenAndServe(":8080", nil))
+	log.Fatal(http.ListenAndServe(":8080", loggingMiddleware(http.DefaultServeMux)))
 }
 
 func handleHome(w http.ResponseWriter, r *http.Request) {

@@ -303,8 +303,8 @@ func TestRoundGoals_FieldTypes(t *testing.T) {
 // TestSelectRandomGoals_ConsistentLength tests that result always has 4 rounds
 func TestSelectRandomGoals_ConsistentLength(t *testing.T) {
 	testCases := []struct {
-		name      string
-		numGoals  int
+		name     string
+		numGoals int
 	}{
 		{"0 goals", 0},
 		{"1 goal", 1},

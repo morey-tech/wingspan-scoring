@@ -8,7 +8,9 @@
       "Bash(./wingspan-scoring)",
       "Bash(go get:*)",
       "Bash(node --version:*)",
-      "Bash(npx:*)"
+      "Bash(npx:*)",
+      "Bash(go test:*)",
+      "Bash(go tool cover:*)"
     ],
     "deny": [],
     "ask": []
