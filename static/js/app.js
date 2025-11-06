@@ -250,6 +250,11 @@ document.addEventListener('DOMContentLoaded', function() {
             gameState.goals = captureGoalsFromDisplay();
             saveGameState();
         }
+
+        // Initialize round highlighting on page load
+        if (!hasSavedState) {
+            updateCurrentRoundHighlight();
+        }
     })();
 });
 
@@ -464,6 +469,74 @@ function calculatePlayerScores(player) {
     return scores;
 }
 
+// Get the current round (first round where not all players have scored)
+function getCurrentRound() {
+    // If no players, return null
+    if (gameState.players.length === 0) {
+        return null;
+    }
+
+    // Check each round in order
+    for (let round = 1; round <= 4; round++) {
+        // Check if any player hasn't scored this round
+        for (const player of gameState.players) {
+            let hasScored = false;
+
+            // Check all cube placements for this player in this round
+            for (const [key, colors] of Object.entries(gameState.cubePlacements)) {
+                const parts = key.split('-');
+                const r = parseInt(parts[0]);
+
+                if (r === round && colors.includes(player.color)) {
+                    hasScored = true;
+                    break;
+                }
+            }
+
+            // If this player hasn't scored this round, it's the current round
+            if (!hasScored) {
+                return round;
+            }
+        }
+    }
+
+    // All rounds complete
+    return null;
+}
+
+// Update the visual highlighting of the current round
+function updateCurrentRoundHighlight() {
+    // Get all round rows
+    const roundRows = document.querySelectorAll('.round-row');
+
+    // Clear all existing highlights
+    roundRows.forEach(row => {
+        row.classList.remove('current-round', 'completed-round');
+    });
+
+    // Determine current round
+    const currentRound = getCurrentRound();
+
+    if (currentRound === null) {
+        // All rounds complete - mark all as completed
+        roundRows.forEach(row => {
+            row.classList.add('completed-round');
+        });
+        return;
+    }
+
+    // Apply highlighting based on round status
+    roundRows.forEach((row, index) => {
+        const round = index + 1;
+        if (round < currentRound) {
+            row.classList.add('completed-round');
+        } else if (round === currentRound) {
+            row.classList.add('current-round');
+        }
+        // Future rounds (round > currentRound) get no special class
+    });
+}
+
 // Check if player is winning
 function isPlayerWinning(playerId, playerTotal) {
     const totals = gameState.players.map((p, idx) => {
@@ -620,6 +693,9 @@ function toggleCubePlacement(round, score, position, playerColor) {
         const boxPosition = box.dataset.position;
         renderCubesInBox(box, round, boxScore, boxPosition);
     });
+
+    // Update round highlighting
+    updateCurrentRoundHighlight();
 }
 
 // Render cubes in a score box
@@ -653,6 +729,7 @@ function clearAllCubes(skipConfirm = false) {
 
     renderScoreTable();
     saveGameState();
+    updateCurrentRoundHighlight();
 }
 
 // Generate a new game with selected expansions
@@ -872,6 +949,9 @@ function loadGameState() {
 
                 // Render cubes after visual state is applied
                 renderAllCubes();
+
+                // Update round highlighting based on loaded state
+                updateCurrentRoundHighlight();
 
                 return true; // Successfully loaded saved state
             }
