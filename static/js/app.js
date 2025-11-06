@@ -689,6 +689,7 @@ async function generateNewGame() {
         const goals = await response.json();
         updateGoalDisplay(goals);
         clearAllCubes();
+        clearAllGameEndScores(true); // Clear game-end scores without confirmation
 
         // Re-fetch goals based on new expansion selection
         await fetchAllGoals();
@@ -1323,8 +1324,8 @@ function getOrdinal(n) {
 }
 
 // Clear all game end scores
-function clearAllGameEndScores() {
-    if (!confirm('Clear all game end scores? This cannot be undone.')) {
+function clearAllGameEndScores(skipConfirm = false) {
+    if (!skipConfirm && !confirm('Clear all game end scores? This cannot be undone.')) {
         return;
     }
 
