@@ -397,132 +397,63 @@ async function confirmDelete() {
     }
 }
 
-// ===== Player Stats Functions =====
+// ===== Leaderboard Functions =====
 
 function initializePlayerStats() {
-    const playerSelect = document.getElementById('playerSelect');
-    if (playerSelect) {
-        playerSelect.addEventListener('change', handlePlayerSelection);
-    }
-
-    // Populate player dropdown after games load
-    populatePlayerDropdown();
+    // Load leaderboard on page load
+    loadLeaderboard();
 }
 
-async function populatePlayerDropdown() {
-    try {
-        // Fetch all games to extract unique player names
-        const response = await fetch('/api/games?limit=1000&offset=0');
-
-        if (!response.ok) {
-            throw new Error('Failed to load games for player list');
-        }
-
-        const data = await response.json();
-        const playerSet = new Set();
-
-        // Extract all unique player names from games
-        if (data.games) {
-            data.games.forEach(game => {
-                if (game.players) {
-                    game.players.forEach(player => {
-                        playerSet.add(player.playerName);
-                    });
-                }
-            });
-        }
-
-        // Sort players alphabetically
-        const players = Array.from(playerSet).sort();
-
-        // Populate dropdown
-        const playerSelect = document.getElementById('playerSelect');
-        if (playerSelect && players.length > 0) {
-            // Keep the default option and add players
-            players.forEach(playerName => {
-                const option = document.createElement('option');
-                option.value = playerName;
-                option.textContent = playerName;
-                playerSelect.appendChild(option);
-            });
-        }
-
-    } catch (error) {
-        console.error('Error populating player dropdown:', error);
-    }
-}
-
-async function handlePlayerSelection(event) {
-    const playerName = event.target.value;
-
-    if (!playerName) {
-        showEmptyStatsState();
-        return;
-    }
-
-    await loadPlayerStats(playerName);
-}
-
-async function loadPlayerStats(playerName) {
+async function loadLeaderboard() {
     const statsContent = document.getElementById('statsContent');
-    statsContent.innerHTML = '<div class="loading">Loading player statistics...</div>';
+    statsContent.innerHTML = '<div class="loading">Loading leaderboard...</div>';
 
     try {
-        const response = await fetch(`/api/stats/${encodeURIComponent(playerName)}`);
+        const response = await fetch('/api/leaderboard');
 
         if (!response.ok) {
-            throw new Error('Failed to load player stats');
+            throw new Error('Failed to load leaderboard');
         }
 
-        const stats = await response.json();
-        displayPlayerStats(playerName, stats);
+        const leaderboard = await response.json();
+        displayLeaderboard(leaderboard);
 
     } catch (error) {
-        console.error('Error loading player stats:', error);
-        statsContent.innerHTML = '<div class="error">Failed to load player statistics. Please try again.</div>';
+        console.error('Error loading leaderboard:', error);
+        statsContent.innerHTML = '<div class="error">Failed to load leaderboard. Please try again.</div>';
     }
 }
 
-function displayPlayerStats(playerName, stats) {
+function displayLeaderboard(leaderboard) {
     const statsContent = document.getElementById('statsContent');
 
-    const winRate = stats.winRate ? stats.winRate.toFixed(1) : '0.0';
-    const avgScore = stats.averageScore ? stats.averageScore.toFixed(1) : '0.0';
+    // Helper function to create a leaderboard card
+    function createLeaderCard(icon, category, leader) {
+        const playerName = leader.playerName || 'N/A';
+        const score = leader.score || 0;
+
+        return `
+            <div class="stat-card">
+                <div class="stat-icon">${icon}</div>
+                <div class="stat-value">${score}</div>
+                <div class="stat-label">${category}</div>
+                <div class="stat-leader">${playerName}</div>
+            </div>
+        `;
+    }
 
     statsContent.innerHTML = `
         <div class="stats-cards">
-            <div class="stat-card">
-                <div class="stat-icon">🎮</div>
-                <div class="stat-value">${stats.gamesPlayed || 0}</div>
-                <div class="stat-label">Games Played</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">🏆</div>
-                <div class="stat-value">${stats.wins || 0}</div>
-                <div class="stat-label">Total Wins</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">📊</div>
-                <div class="stat-value">${winRate}%</div>
-                <div class="stat-label">Win Rate</div>
-            </div>
-
-            <div class="stat-card">
-                <div class="stat-icon">⭐</div>
-                <div class="stat-value">${avgScore}</div>
-                <div class="stat-label">Average Score</div>
-            </div>
-        </div>
-    `;
-}
-
-function showEmptyStatsState() {
-    const statsContent = document.getElementById('statsContent');
-    statsContent.innerHTML = `
-        <div class="stats-empty-state">
-            <p>Select a player to view their statistics</p>
+            ${createLeaderCard('🏆', 'Total Score', leaderboard.totalScore)}
+            ${createLeaderCard('🐦', 'Bird Points', leaderboard.birdPoints)}
+            ${createLeaderCard('🎯', 'Bonus Cards', leaderboard.bonusCards)}
+            ${createLeaderCard('🎪', 'Round Goals', leaderboard.roundGoals)}
+            ${createLeaderCard('🥚', 'Eggs', leaderboard.eggs)}
+            ${createLeaderCard('🍎', 'Cached Food', leaderboard.cachedFood)}
+            ${createLeaderCard('🃏', 'Tucked Cards', leaderboard.tuckedCards)}
+            ${createLeaderCard('🌲', 'Nectar Forest', leaderboard.nectarForest)}
+            ${createLeaderCard('🌾', 'Nectar Grassland', leaderboard.nectarGrassland)}
+            ${createLeaderCard('💧', 'Nectar Wetland', leaderboard.nectarWetland)}
         </div>
     `;
 }

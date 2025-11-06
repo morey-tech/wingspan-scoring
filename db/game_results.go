@@ -274,6 +274,122 @@ func GetPlayerStats(playerName string) (map[string]interface{}, error) {
 	return stats, nil
 }
 
+// CategoryLeader represents the top player in a specific scoring category
+type CategoryLeader struct {
+	PlayerName string `json:"playerName"`
+	Score      int    `json:"score"`
+}
+
+// LeaderboardStats holds the leaderboard data for all scoring categories
+type LeaderboardStats struct {
+	TotalScore      CategoryLeader `json:"totalScore"`
+	BirdPoints      CategoryLeader `json:"birdPoints"`
+	BonusCards      CategoryLeader `json:"bonusCards"`
+	RoundGoals      CategoryLeader `json:"roundGoals"`
+	Eggs            CategoryLeader `json:"eggs"`
+	CachedFood      CategoryLeader `json:"cachedFood"`
+	TuckedCards     CategoryLeader `json:"tuckedCards"`
+	NectarForest    CategoryLeader `json:"nectarForest"`
+	NectarGrassland CategoryLeader `json:"nectarGrassland"`
+	NectarWetland   CategoryLeader `json:"nectarWetland"`
+}
+
+// GetLeaderboardStats returns the highest score and player name for each scoring category
+func GetLeaderboardStats() (*LeaderboardStats, error) {
+	// Query all games
+	query := `SELECT players_json FROM game_results`
+
+	rows, err := DB.Query(query)
+	if err != nil {
+		return nil, fmt.Errorf("failed to query game results: %w", err)
+	}
+	defer rows.Close()
+
+	leaderboard := &LeaderboardStats{}
+
+	// Iterate through all games to find max scores
+	for rows.Next() {
+		var playersJSON string
+		if err := rows.Scan(&playersJSON); err != nil {
+			continue
+		}
+
+		var players []scoring.PlayerGameEnd
+		if err := json.Unmarshal([]byte(playersJSON), &players); err != nil {
+			continue
+		}
+
+		// Check each player's scores
+		for _, p := range players {
+			// Total Score
+			if p.Total > leaderboard.TotalScore.Score {
+				leaderboard.TotalScore.PlayerName = p.PlayerName
+				leaderboard.TotalScore.Score = p.Total
+			}
+
+			// Bird Points
+			if p.BirdPoints > leaderboard.BirdPoints.Score {
+				leaderboard.BirdPoints.PlayerName = p.PlayerName
+				leaderboard.BirdPoints.Score = p.BirdPoints
+			}
+
+			// Bonus Cards
+			if p.BonusCards > leaderboard.BonusCards.Score {
+				leaderboard.BonusCards.PlayerName = p.PlayerName
+				leaderboard.BonusCards.Score = p.BonusCards
+			}
+
+			// Round Goals
+			if p.RoundGoals > leaderboard.RoundGoals.Score {
+				leaderboard.RoundGoals.PlayerName = p.PlayerName
+				leaderboard.RoundGoals.Score = p.RoundGoals
+			}
+
+			// Eggs
+			if p.Eggs > leaderboard.Eggs.Score {
+				leaderboard.Eggs.PlayerName = p.PlayerName
+				leaderboard.Eggs.Score = p.Eggs
+			}
+
+			// Cached Food
+			if p.CachedFood > leaderboard.CachedFood.Score {
+				leaderboard.CachedFood.PlayerName = p.PlayerName
+				leaderboard.CachedFood.Score = p.CachedFood
+			}
+
+			// Tucked Cards
+			if p.TuckedCards > leaderboard.TuckedCards.Score {
+				leaderboard.TuckedCards.PlayerName = p.PlayerName
+				leaderboard.TuckedCards.Score = p.TuckedCards
+			}
+
+			// Nectar Forest
+			if p.NectarForest > leaderboard.NectarForest.Score {
+				leaderboard.NectarForest.PlayerName = p.PlayerName
+				leaderboard.NectarForest.Score = p.NectarForest
+			}
+
+			// Nectar Grassland
+			if p.NectarGrassland > leaderboard.NectarGrassland.Score {
+				leaderboard.NectarGrassland.PlayerName = p.PlayerName
+				leaderboard.NectarGrassland.Score = p.NectarGrassland
+			}
+
+			// Nectar Wetland
+			if p.NectarWetland > leaderboard.NectarWetland.Score {
+				leaderboard.NectarWetland.PlayerName = p.PlayerName
+				leaderboard.NectarWetland.Score = p.NectarWetland
+			}
+		}
+	}
+
+	if err := rows.Err(); err != nil {
+		return nil, fmt.Errorf("error iterating rows: %w", err)
+	}
+
+	return leaderboard, nil
+}
+
 // DeleteGameResult deletes a game result by ID
 func DeleteGameResult(id int64) error {
 	query := `DELETE FROM game_results WHERE id = ?`

@@ -595,3 +595,286 @@ func TestSaveAndRetrieve_ComplexGame(t *testing.T) {
 	assert.Equal(t, 3, result.NectarScoring.Wetland["Alice"])
 	assert.Equal(t, 3, result.NectarScoring.Wetland["Bob"])
 }
+
+// TestGetLeaderboardStats_Empty tests leaderboard with no games
+func TestGetLeaderboardStats_Empty(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	leaderboard, err := GetLeaderboardStats()
+	require.NoError(t, err)
+	require.NotNil(t, leaderboard)
+
+	// All categories should have empty values
+	assert.Equal(t, "", leaderboard.TotalScore.PlayerName)
+	assert.Equal(t, 0, leaderboard.TotalScore.Score)
+	assert.Equal(t, "", leaderboard.BirdPoints.PlayerName)
+	assert.Equal(t, 0, leaderboard.BirdPoints.Score)
+}
+
+// TestGetLeaderboardStats_SingleGame tests leaderboard with one game
+func TestGetLeaderboardStats_SingleGame(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	players := []scoring.PlayerGameEnd{
+		{
+			PlayerName:      "Alice",
+			BirdPoints:      50,
+			BonusCards:      12,
+			RoundGoals:      14,
+			Eggs:            9,
+			CachedFood:      5,
+			TuckedCards:     6,
+			NectarForest:    5,
+			NectarGrassland: 2,
+			NectarWetland:   0,
+			Total:           103,
+			Rank:            1,
+		},
+		{
+			PlayerName:      "Bob",
+			BirdPoints:      45,
+			BonusCards:      10,
+			RoundGoals:      12,
+			Eggs:            8,
+			CachedFood:      4,
+			TuckedCards:     5,
+			NectarForest:    2,
+			NectarGrassland: 5,
+			NectarWetland:   0,
+			Total:           91,
+			Rank:            2,
+		},
+	}
+	nectarScoring := scoring.NectarScoring{}
+	_, err := SaveGameResult(players, nectarScoring, true)
+	require.NoError(t, err)
+
+	leaderboard, err := GetLeaderboardStats()
+	require.NoError(t, err)
+	require.NotNil(t, leaderboard)
+
+	// Verify Alice has highest total score
+	assert.Equal(t, "Alice", leaderboard.TotalScore.PlayerName)
+	assert.Equal(t, 103, leaderboard.TotalScore.Score)
+
+	// Verify Alice has highest bird points
+	assert.Equal(t, "Alice", leaderboard.BirdPoints.PlayerName)
+	assert.Equal(t, 50, leaderboard.BirdPoints.Score)
+
+	// Verify Alice has highest bonus cards
+	assert.Equal(t, "Alice", leaderboard.BonusCards.PlayerName)
+	assert.Equal(t, 12, leaderboard.BonusCards.Score)
+
+	// Verify Bob has highest nectar grassland
+	assert.Equal(t, "Bob", leaderboard.NectarGrassland.PlayerName)
+	assert.Equal(t, 5, leaderboard.NectarGrassland.Score)
+}
+
+// TestGetLeaderboardStats_MultipleGames tests leaderboard with different leaders per category
+func TestGetLeaderboardStats_MultipleGames(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// Game 1: Alice wins with high bird points
+	game1 := []scoring.PlayerGameEnd{
+		{
+			PlayerName:  "Alice",
+			BirdPoints:  60,
+			BonusCards:  10,
+			RoundGoals:  12,
+			Eggs:        8,
+			CachedFood:  4,
+			TuckedCards: 5,
+			Total:       99,
+			Rank:        1,
+		},
+		{
+			PlayerName:  "Bob",
+			BirdPoints:  45,
+			BonusCards:  15,
+			RoundGoals:  10,
+			Eggs:        7,
+			CachedFood:  3,
+			TuckedCards: 4,
+			Total:       84,
+			Rank:        2,
+		},
+	}
+	_, err := SaveGameResult(game1, scoring.NectarScoring{}, false)
+	require.NoError(t, err)
+
+	// Game 2: Bob wins with high total score and high eggs
+	game2 := []scoring.PlayerGameEnd{
+		{
+			PlayerName:  "Bob",
+			BirdPoints:  50,
+			BonusCards:  12,
+			RoundGoals:  14,
+			Eggs:        15,
+			CachedFood:  5,
+			TuckedCards: 6,
+			Total:       102,
+			Rank:        1,
+		},
+		{
+			PlayerName:  "Carol",
+			BirdPoints:  48,
+			BonusCards:  11,
+			RoundGoals:  13,
+			Eggs:        9,
+			CachedFood:  10,
+			TuckedCards: 4,
+			Total:       95,
+			Rank:        2,
+		},
+	}
+	_, err = SaveGameResult(game2, scoring.NectarScoring{}, false)
+	require.NoError(t, err)
+
+	// Game 3: Carol wins with high round goals and tucked cards
+	game3 := []scoring.PlayerGameEnd{
+		{
+			PlayerName:  "Carol",
+			BirdPoints:  52,
+			BonusCards:  13,
+			RoundGoals:  18,
+			Eggs:        10,
+			CachedFood:  6,
+			TuckedCards: 12,
+			Total:       111,
+			Rank:        1,
+		},
+		{
+			PlayerName:  "Alice",
+			BirdPoints:  49,
+			BonusCards:  14,
+			RoundGoals:  11,
+			Eggs:        8,
+			CachedFood:  5,
+			TuckedCards: 7,
+			Total:       94,
+			Rank:        2,
+		},
+	}
+	_, err = SaveGameResult(game3, scoring.NectarScoring{}, false)
+	require.NoError(t, err)
+
+	leaderboard, err := GetLeaderboardStats()
+	require.NoError(t, err)
+	require.NotNil(t, leaderboard)
+
+	// Verify different leaders for different categories
+	assert.Equal(t, "Carol", leaderboard.TotalScore.PlayerName)
+	assert.Equal(t, 111, leaderboard.TotalScore.Score)
+
+	assert.Equal(t, "Alice", leaderboard.BirdPoints.PlayerName)
+	assert.Equal(t, 60, leaderboard.BirdPoints.Score)
+
+	assert.Equal(t, "Bob", leaderboard.BonusCards.PlayerName)
+	assert.Equal(t, 15, leaderboard.BonusCards.Score)
+
+	assert.Equal(t, "Carol", leaderboard.RoundGoals.PlayerName)
+	assert.Equal(t, 18, leaderboard.RoundGoals.Score)
+
+	assert.Equal(t, "Bob", leaderboard.Eggs.PlayerName)
+	assert.Equal(t, 15, leaderboard.Eggs.Score)
+
+	assert.Equal(t, "Carol", leaderboard.CachedFood.PlayerName)
+	assert.Equal(t, 10, leaderboard.CachedFood.Score)
+
+	assert.Equal(t, "Carol", leaderboard.TuckedCards.PlayerName)
+	assert.Equal(t, 12, leaderboard.TuckedCards.Score)
+}
+
+// TestGetLeaderboardStats_WithNectar tests leaderboard with nectar scoring
+func TestGetLeaderboardStats_WithNectar(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// Game with Oceania expansion (nectar scoring)
+	players := []scoring.PlayerGameEnd{
+		{
+			PlayerName:      "Alice",
+			BirdPoints:      50,
+			BonusCards:      12,
+			RoundGoals:      14,
+			Eggs:            9,
+			CachedFood:      5,
+			TuckedCards:     6,
+			NectarForest:    5,
+			NectarGrassland: 2,
+			NectarWetland:   5,
+			Total:           108,
+			Rank:            1,
+		},
+		{
+			PlayerName:      "Bob",
+			BirdPoints:      45,
+			BonusCards:      10,
+			RoundGoals:      12,
+			Eggs:            8,
+			CachedFood:      4,
+			TuckedCards:     5,
+			NectarForest:    2,
+			NectarGrassland: 5,
+			NectarWetland:   2,
+			Total:           93,
+			Rank:            2,
+		},
+	}
+	nectarScoring := scoring.NectarScoring{
+		Forest:    map[string]int{"Alice": 5, "Bob": 2},
+		Grassland: map[string]int{"Alice": 2, "Bob": 5},
+		Wetland:   map[string]int{"Alice": 5, "Bob": 2},
+	}
+	_, err := SaveGameResult(players, nectarScoring, true)
+	require.NoError(t, err)
+
+	leaderboard, err := GetLeaderboardStats()
+	require.NoError(t, err)
+	require.NotNil(t, leaderboard)
+
+	// Verify nectar leaders
+	assert.Equal(t, "Alice", leaderboard.NectarForest.PlayerName)
+	assert.Equal(t, 5, leaderboard.NectarForest.Score)
+
+	assert.Equal(t, "Bob", leaderboard.NectarGrassland.PlayerName)
+	assert.Equal(t, 5, leaderboard.NectarGrassland.Score)
+
+	assert.Equal(t, "Alice", leaderboard.NectarWetland.PlayerName)
+	assert.Equal(t, 5, leaderboard.NectarWetland.Score)
+}
+
+// TestGetLeaderboardStats_TiedScores tests that first player alphabetically wins ties
+func TestGetLeaderboardStats_TiedScores(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// Game where both players have same total score
+	players := []scoring.PlayerGameEnd{
+		{
+			PlayerName: "Zoe",
+			Total:      100,
+			BirdPoints: 50,
+			Rank:       1,
+		},
+		{
+			PlayerName: "Alice",
+			Total:      100,
+			BirdPoints: 50,
+			Rank:       2,
+		},
+	}
+	_, err := SaveGameResult(players, scoring.NectarScoring{}, false)
+	require.NoError(t, err)
+
+	leaderboard, err := GetLeaderboardStats()
+	require.NoError(t, err)
+	require.NotNil(t, leaderboard)
+
+	// First encountered player (Zoe) should be the leader since we don't have special tie logic
+	assert.Equal(t, "Zoe", leaderboard.TotalScore.PlayerName)
+	assert.Equal(t, 100, leaderboard.TotalScore.Score)
+}
