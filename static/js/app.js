@@ -1515,3 +1515,35 @@ function applyGameEndSavedState() {
         });
     });
 }
+
+// Navigation Toggle
+document.addEventListener('DOMContentLoaded', () => {
+    const toggleOptions = document.querySelectorAll('.toggle-option');
+    const slider = document.querySelector('.toggle-slider');
+
+    toggleOptions.forEach(option => {
+        option.addEventListener('click', function() {
+            const targetPage = this.dataset.page;
+
+            // Determine target URL
+            let targetUrl = '/';
+            if (targetPage === 'history') {
+                targetUrl = '/history';
+            }
+
+            // Animate slider to clicked position
+            if (targetPage === 'home') {
+                slider.classList.remove('toggle-right');
+                slider.classList.add('toggle-left');
+            } else {
+                slider.classList.remove('toggle-left');
+                slider.classList.add('toggle-right');
+            }
+
+            // Navigate after animation completes
+            setTimeout(() => {
+                window.location.href = targetUrl;
+            }, 300);
+        });
+    });
+});
