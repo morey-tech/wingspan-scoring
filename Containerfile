@@ -15,10 +15,14 @@ RUN go mod download
 # Copy source code
 COPY . .
 
+# Version argument (defaults to "dev" if not provided)
+ARG VERSION=dev
+
 # Build the application
 # CGO_ENABLED=0 for static binary
 # -ldflags="-s -w" to reduce binary size
-RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w" -o wingspan-scoring .
+# -X main.version=${VERSION} to inject version at build time
+RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.version=${VERSION}" -o wingspan-scoring .
 
 # Stage 2: Create minimal runtime image
 FROM registry.access.redhat.com/ubi10-minimal:10.0

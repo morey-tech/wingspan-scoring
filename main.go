@@ -17,6 +17,9 @@ var content embed.FS
 
 var tmpl *template.Template
 
+// version is set at build time via -ldflags
+var version = "dev"
+
 func init() {
 	var err error
 	tmpl, err = template.ParseFS(content, "templates/*.html")
@@ -35,6 +38,7 @@ type PageData struct {
 	PageTitle    string
 	PageSubtitle string
 	CurrentPage  string
+	Version      string
 }
 
 func main() {
@@ -52,6 +56,7 @@ func main() {
 	// Routes
 	http.HandleFunc("/", handleHome)
 	http.HandleFunc("/history", handleHistory)
+	http.HandleFunc("/api/version", handleVersion)
 	http.HandleFunc("/api/new-game", handleNewGame)
 	http.HandleFunc("/api/goals", handleGetGoals)
 	http.HandleFunc("/api/calculate-scores", handleCalculateScores)
@@ -84,6 +89,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		PageTitle:    "Round Goals",
 		PageSubtitle: "Round End Goals",
 		CurrentPage:  "home",
+		Version:      version,
 	}
 
 	err = tmpl.ExecuteTemplate(w, "index.html", data)
@@ -91,6 +97,13 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		log.Println("Error rendering template:", err)
 		http.Error(w, "Error rendering page", http.StatusInternalServerError)
 	}
+}
+
+func handleVersion(w http.ResponseWriter, r *http.Request) {
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(map[string]string{
+		"version": version,
+	})
 }
 
 func handleNewGame(w http.ResponseWriter, r *http.Request) {
@@ -219,6 +232,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		PageTitle:    "Game History",
 		PageSubtitle: "Game History",
 		CurrentPage:  "history",
+		Version:      version,
 	}
 
 	err := tmpl.ExecuteTemplate(w, "history.html", data)
