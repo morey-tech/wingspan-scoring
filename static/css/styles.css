@@ -45,33 +45,71 @@ header {
     opacity: 0.95;
 }
 
-/* Navigation Bar */
-.header-nav {
+/* Sliding Toggle Navigation */
+.nav-toggle {
     display: flex;
     justify-content: center;
-    gap: 15px;
     margin-bottom: 20px;
-    flex-wrap: wrap;
-}
-
-.nav-link {
-    padding: 10px 24px;
-    font-size: 1em;
-    font-weight: 600;
-    background: rgba(255, 255, 255, 0.6);
-    color: var(--color-text-primary);
-    text-decoration: none;
-    border-radius: var(--radius-md);
-    transition: var(--transition-base);
+    position: relative;
+    width: 400px;
+    max-width: 90%;
+    margin-left: auto;
+    margin-right: auto;
+    height: 50px;
+    background: rgba(255, 255, 255, 0.3);
+    border-radius: 25px;
     border: 2px solid rgba(255, 255, 255, 0.4);
     box-shadow: var(--shadow-sm);
+    padding: 4px;
 }
 
-.nav-link:hover {
-    background: rgba(255, 255, 255, 0.8);
-    border-color: var(--color-border-medium);
-    transform: translateY(-2px);
+.toggle-slider {
+    position: absolute;
+    width: calc(50% - 4px);
+    height: calc(100% - 8px);
+    background: rgba(255, 255, 255, 0.9);
+    border-radius: 21px;
+    transition: transform 0.3s cubic-bezier(0.4, 0.0, 0.2, 1);
     box-shadow: var(--shadow-md);
+    top: 4px;
+    left: 4px;
+    z-index: 1;
+}
+
+.toggle-left {
+    transform: translateX(0);
+}
+
+.toggle-right {
+    transform: translateX(calc(100% + 4px));
+}
+
+.toggle-option {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    position: relative;
+    z-index: 2;
+    transition: var(--transition-base);
+}
+
+.toggle-option span {
+    font-size: 1em;
+    font-weight: 600;
+    color: var(--color-text-primary);
+    transition: color 0.3s ease;
+    user-select: none;
+}
+
+.toggle-option:hover span {
+    color: var(--color-primary, #4a7ba7);
+}
+
+.toggle-option-left[data-active="true"] span,
+.toggle-option-right[data-active="true"] span {
+    color: var(--color-primary, #4a7ba7);
 }
 
 /* Legacy h1 support for backward compatibility */
@@ -573,15 +611,14 @@ footer p {
         font-size: 1.2em;
     }
 
-    .header-nav {
-        flex-direction: column;
-        gap: 10px;
+    .nav-toggle {
+        width: 100%;
+        max-width: 350px;
+        height: 48px;
     }
 
-    .nav-link {
-        width: 100%;
-        max-width: 300px;
-        margin: 0 auto;
+    .toggle-option span {
+        font-size: 0.9em;
     }
 
     .controls {

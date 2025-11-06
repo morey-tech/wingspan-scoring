@@ -12,15 +12,15 @@
         <header>
             <div class="header-title-section">
                 <h1 class="main-title">Wingspan Scoring</h1>
-                <h2 class="page-subtitle">{{.PageSubtitle}}</h2>
             </div>
-            <nav class="header-nav">
-                {{if ne .CurrentPage "home"}}
-                <a href="/" class="nav-link">Scoring</a>
-                {{end}}
-                {{if ne .CurrentPage "history"}}
-                <a href="/history" class="nav-link">Game History</a>
-                {{end}}
+            <nav class="nav-toggle">
+                <div class="toggle-slider {{if eq .CurrentPage "home"}}toggle-left{{else}}toggle-right{{end}}"></div>
+                <div class="toggle-option toggle-option-left" data-page="home">
+                    <span>Round End Goals</span>
+                </div>
+                <div class="toggle-option toggle-option-right" data-page="history">
+                    <span>Game History</span>
+                </div>
             </nav>
         </header>
 
