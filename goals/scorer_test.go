@@ -410,9 +410,9 @@ func TestCalculateBlueScores_EmptyInput(t *testing.T) {
 // TestCalculateBlueScores_BoundaryValues tests exact boundary at 5 points
 func TestCalculateBlueScores_BoundaryValues(t *testing.T) {
 	playerCounts := map[string]int{
-		"Four":  4,
-		"Five":  5,
-		"Six":   6,
+		"Four": 4,
+		"Five": 5,
+		"Six":  6,
 	}
 
 	scores := CalculateBlueScores(playerCounts)

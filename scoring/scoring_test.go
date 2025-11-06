@@ -116,9 +116,9 @@ func TestScoreHabitat_SingleWinner(t *testing.T) {
 
 	points := scoreHabitat(players, func(p PlayerGameEnd) int { return p.NectarForest })
 
-	assert.Equal(t, 5, points["Alice"])  // 1st place = 5 points
-	assert.Equal(t, 2, points["Bob"])    // 2nd place = 2 points
-	assert.Equal(t, 0, points["Carol"])  // 3rd place = 0 points
+	assert.Equal(t, 5, points["Alice"]) // 1st place = 5 points
+	assert.Equal(t, 2, points["Bob"])   // 2nd place = 2 points
+	assert.Equal(t, 0, points["Carol"]) // 3rd place = 0 points
 }
 
 // TestScoreHabitat_TwoWayTieForFirst tests 2-player tie for 1st place
@@ -331,9 +331,9 @@ func TestDetermineRankings_CompleteTie(t *testing.T) {
 func TestDetermineRankings_MultipleGroups(t *testing.T) {
 	players := []PlayerGameEnd{
 		{PlayerName: "Alice", Total: 100, UnusedFood: 5},
-		{PlayerName: "Bob", Total: 100, UnusedFood: 5},   // Tied with Alice for 1st
+		{PlayerName: "Bob", Total: 100, UnusedFood: 5}, // Tied with Alice for 1st
 		{PlayerName: "Carol", Total: 90, UnusedFood: 3},
-		{PlayerName: "Dave", Total: 90, UnusedFood: 3},   // Tied with Carol for 3rd
+		{PlayerName: "Dave", Total: 90, UnusedFood: 3}, // Tied with Carol for 3rd
 		{PlayerName: "Eve", Total: 80, UnusedFood: 2},
 	}
 
@@ -483,9 +483,9 @@ func TestScoreHabitat_FourPlusPlayers(t *testing.T) {
 
 	points := scoreHabitat(players, func(p PlayerGameEnd) int { return p.NectarForest })
 
-	assert.Equal(t, 5, points["Alice"])  // 1st = 5
-	assert.Equal(t, 2, points["Bob"])    // 2nd = 2
-	assert.Equal(t, 0, points["Carol"])  // 3rd = 0
-	assert.Equal(t, 0, points["Dave"])   // 4th = 0
-	assert.Equal(t, 0, points["Eve"])    // 5th = 0
+	assert.Equal(t, 5, points["Alice"]) // 1st = 5
+	assert.Equal(t, 2, points["Bob"])   // 2nd = 2
+	assert.Equal(t, 0, points["Carol"]) // 3rd = 0
+	assert.Equal(t, 0, points["Dave"])  // 4th = 0
+	assert.Equal(t, 0, points["Eve"])   // 5th = 0
 }

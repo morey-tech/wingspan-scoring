@@ -6,26 +6,26 @@ import (
 
 // PlayerGameEnd represents a player's complete end-game score
 type PlayerGameEnd struct {
-	PlayerName       string `json:"playerName"`
-	BirdPoints       int    `json:"birdPoints"`
-	BonusCards       int    `json:"bonusCards"`
-	RoundGoals       int    `json:"roundGoals"`
-	Eggs             int    `json:"eggs"`
-	CachedFood       int    `json:"cachedFood"`
-	TuckedCards      int    `json:"tuckedCards"`
-	NectarForest     int    `json:"nectarForest"`     // Oceania expansion
-	NectarGrassland  int    `json:"nectarGrassland"`  // Oceania expansion
-	NectarWetland    int    `json:"nectarWetland"`    // Oceania expansion
-	UnusedFood       int    `json:"unusedFood"`       // For tiebreaker
-	Total            int    `json:"total"`
-	Rank             int    `json:"rank"`             // 1 = winner, 2 = second, etc.
+	PlayerName      string `json:"playerName"`
+	BirdPoints      int    `json:"birdPoints"`
+	BonusCards      int    `json:"bonusCards"`
+	RoundGoals      int    `json:"roundGoals"`
+	Eggs            int    `json:"eggs"`
+	CachedFood      int    `json:"cachedFood"`
+	TuckedCards     int    `json:"tuckedCards"`
+	NectarForest    int    `json:"nectarForest"`    // Oceania expansion
+	NectarGrassland int    `json:"nectarGrassland"` // Oceania expansion
+	NectarWetland   int    `json:"nectarWetland"`   // Oceania expansion
+	UnusedFood      int    `json:"unusedFood"`      // For tiebreaker
+	Total           int    `json:"total"`
+	Rank            int    `json:"rank"` // 1 = winner, 2 = second, etc.
 }
 
 // NectarScoring represents nectar points awarded per habitat
 type NectarScoring struct {
-	Forest     map[string]int `json:"forest"`     // playerName -> points
-	Grassland  map[string]int `json:"grassland"`  // playerName -> points
-	Wetland    map[string]int `json:"wetland"`    // playerName -> points
+	Forest    map[string]int `json:"forest"`    // playerName -> points
+	Grassland map[string]int `json:"grassland"` // playerName -> points
+	Wetland   map[string]int `json:"wetland"`   // playerName -> points
 }
 
 // CalculateGameEndScores calculates all player scores including nectar competitive scoring

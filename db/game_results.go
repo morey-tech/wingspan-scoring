@@ -10,14 +10,14 @@ import (
 
 // GameResult represents a saved game result
 type GameResult struct {
-	ID             int64                      `json:"id"`
-	CreatedAt      time.Time                  `json:"createdAt"`
-	NumPlayers     int                        `json:"numPlayers"`
-	IncludeOceania bool                       `json:"includeOceania"`
-	WinnerName     string                     `json:"winnerName"`
-	WinnerScore    int                        `json:"winnerScore"`
-	Players        []scoring.PlayerGameEnd    `json:"players"`
-	NectarScoring  *scoring.NectarScoring     `json:"nectarScoring,omitempty"`
+	ID             int64                   `json:"id"`
+	CreatedAt      time.Time               `json:"createdAt"`
+	NumPlayers     int                     `json:"numPlayers"`
+	IncludeOceania bool                    `json:"includeOceania"`
+	WinnerName     string                  `json:"winnerName"`
+	WinnerScore    int                     `json:"winnerScore"`
+	Players        []scoring.PlayerGameEnd `json:"players"`
+	NectarScoring  *scoring.NectarScoring  `json:"nectarScoring,omitempty"`
 }
 
 // SaveGameResult saves a game result to the database

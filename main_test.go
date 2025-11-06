@@ -125,11 +125,11 @@ func TestHandleNewGame_InvalidMethod(t *testing.T) {
 // TestHandleGetGoals_DifferentExpansions tests GET /api/goals with various expansions
 func TestHandleGetGoals_DifferentExpansions(t *testing.T) {
 	testCases := []struct {
-		name         string
-		base         string
-		european     string
-		oceania      string
-		expectedLen  int
+		name        string
+		base        string
+		european    string
+		oceania     string
+		expectedLen int
 	}{
 		{"Base only", "true", "false", "false", 16},
 		{"European only", "false", "true", "false", 10},
