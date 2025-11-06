@@ -2,9 +2,19 @@ name: Build Container Image
 
 on:
   push:
-    branches:
-      - main
-      - test/add-comprehensive-test-suite
+    paths:
+      - '*.go'
+      - 'goals/**'
+      - 'scoring/**'
+      - 'db/**'
+      - 'static/**'
+      - 'templates/**'
+      - 'go.mod'
+      - 'go.sum'
+      - 'Containerfile'
+      - '.dockerignore'
+      - '.github/workflows/container-build.yml'
+  pull_request:
     paths:
       - '*.go'
       - 'goals/**'
@@ -67,6 +77,7 @@ jobs:
 
   build-and-push:
     needs: test
+    if: github.ref == 'refs/heads/main' && github.event_name == 'push'
     runs-on: ubuntu-latest
     permissions:
       contents: read
