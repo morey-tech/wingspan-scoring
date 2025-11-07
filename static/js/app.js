@@ -9,6 +9,44 @@ const DEFAULT_PLAYER_NAMES = ['Dani', 'Nick', 'Player 3', 'Player 4', 'Player 5'
 // Default color assignments: Player 1 = blue, Player 2 = yellow, then others in order
 const DEFAULT_PLAYER_COLORS = ['blue', 'yellow', 'green', 'purple', 'red'];
 
+// Goal ID to Sprite ID Mapping
+const goalIdToSpriteId = {
+    'base-birds-forest': 'g-birds-in-forest',
+    'base-birds-grassland': 'g-birds-in-grassland',
+    'base-birds-wetland': 'g-birds-in-wetland',
+    'base-birds-bowl-egg': 'g-bowl-with-egg',
+    'base-birds-cavity-egg': 'g-cavity-with-egg',
+    'base-birds-ground-egg': 'g-ground-with-egg',
+    'base-birds-platform-egg': 'g-platform-with-egg',
+    'base-eggs-forest': 'g-eggs-in-forest',
+    'base-eggs-grassland': 'g-eggs-in-grassland',
+    'base-eggs-wetland': 'g-eggs-in-wetland',
+    'base-eggs-bowl': 'g-eggs-in-bowl',
+    'base-eggs-cavity': 'g-eggs-in-cavity',
+    'base-eggs-ground': 'g-eggs-in-ground',
+    'base-eggs-platform': 'g-eggs-in-platform',
+    'base-egg-sets': 'g-egg-habitat-sets',
+    'base-total-birds': 'g-total-birds',
+    'eu-birds-tucked': 'g-birds-with-tucked-cards',
+    'eu-food-cost': 'g-birds-food-cost',
+    'eu-birds-one-row': 'g-birds-in-one-row',
+    'eu-filled-columns': 'g-filled-columns',
+    'eu-brown-powers': 'g-brown-powers',
+    'eu-white-no-powers': 'g-white-no-powers',
+    'eu-birds-high-value': 'g-birds-over-4pt',
+    'eu-birds-no-eggs': 'g-eggless-birds',
+    'eu-food-supply': 'g-food-owned',
+    'eu-cards-hand': 'g-birds-in-hand',
+    'oc-beak-left': 'g-beak-lt',
+    'oc-beak-right': 'g-beak-rt',
+    'oc-invertebrate-cost': 'g-inv-in-cost',
+    'oc-fruit-seed-cost': 'g-fruit-seed-in-cost',
+    'oc-no-goal': 'g-no-goal',
+    'oc-rat-fish-cost': 'g-rodent-fish-in-cost',
+    'oc-cubes-play-bird': 'g-cubes-on-play-bird',
+    'oc-birds-low-value': 'g-birds-3pt-or-under'
+};
+
 // Game state
 let gameState = {
     players: [],
@@ -37,6 +75,46 @@ async function fetchAllGoals() {
         console.error('Error fetching goals:', error);
         return [];
     }
+}
+
+// Load SVG sprite sheet and inline it
+async function loadSpriteSheet() {
+    try {
+        const response = await fetch('/static/images/svg/wingspan-sprites.svg');
+        if (!response.ok) {
+            throw new Error(`Failed to load sprite sheet: ${response.status}`);
+        }
+        const svgText = await response.text();
+
+        // Create hidden container for sprite definitions
+        const container = document.createElement('div');
+        container.style.display = 'none';
+        container.innerHTML = svgText;
+        document.body.insertBefore(container, document.body.firstChild);
+
+        console.log('SVG sprite sheet loaded successfully');
+    } catch (error) {
+        console.error('Error loading sprite sheet:', error);
+    }
+}
+
+// Update goal tiles with correct sprite references
+function updateGoalTiles() {
+    const goalInfoElements = document.querySelectorAll('.goal-info[data-goal-id]');
+
+    goalInfoElements.forEach(element => {
+        const goalId = element.getAttribute('data-goal-id');
+        const spriteId = goalIdToSpriteId[goalId];
+
+        if (spriteId) {
+            const useElement = element.querySelector('.goal-tile-sprite');
+            if (useElement) {
+                useElement.setAttribute('href', `#${spriteId}`);
+            }
+        } else {
+            console.warn(`No sprite mapping found for goal ID: ${goalId}`);
+        }
+    });
 }
 
 // Show goal selection menu
@@ -158,7 +236,13 @@ function handleGoalSelection(round, goalId) {
 
         if (goalName) goalName.textContent = selectedGoal.name;
         if (goalDescription) goalDescription.textContent = selectedGoal.description;
+
+        // Update the data-goal-id attribute
+        goalInfo.setAttribute('data-goal-id', selectedGoal.id);
     }
+
+    // Update the goal tile sprite
+    updateGoalTiles();
 
     // Save state
     saveGameState();
@@ -236,8 +320,11 @@ document.addEventListener('DOMContentLoaded', function() {
         }
     });
 
-    // Initialize goals
+    // Initialize goals and sprites
     (async function() {
+        // Load sprite sheet first
+        await loadSpriteSheet();
+
         // Fetch all available goals
         await fetchAllGoals();
 
@@ -250,6 +337,9 @@ document.addEventListener('DOMContentLoaded', function() {
             gameState.goals = captureGoalsFromDisplay();
             saveGameState();
         }
+
+        // Update goal tiles with sprite references
+        updateGoalTiles();
 
         // Initialize round highlighting on page load
         if (!hasSavedState) {
@@ -770,6 +860,9 @@ async function generateNewGame() {
 
         // Re-fetch goals based on new expansion selection
         await fetchAllGoals();
+
+        // Update goal tiles after new game
+        updateGoalTiles();
     } catch (error) {
         console.error('Error generating new game:', error);
         alert('Failed to generate new game. Please try again.');

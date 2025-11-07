@@ -124,4 +124,15 @@
   --transition-fast: 150ms ease;
   --transition-base: 250ms ease;
   --transition-slow: 350ms ease;
+
+  /* SVG Sprite Colors for Goal Tiles */
+  --sprite-paper: #f5f1e8;
+  --sprite-corner-color: #8b7355;
+  --sprite-dark-brown: #3d2817;
+  --sprite-taupe: #a89080;
+  --sprite-fish-blue: #4a90a4;
+  --sprite-seed-orange: #d97644;
+  --sprite-fruit-red: #c44569;
+  --sprite-invertebrate-green: #6b9d5f;
+  --sprite-nectar-pink: #e88bb4;
 }
