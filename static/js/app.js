@@ -215,6 +215,28 @@ function showGoalMenu(element, round) {
     }, 100);
 }
 
+// Update visual state of score boxes based on "No Goal" status
+function updateScoreBoxesVisualState() {
+    // Update all rounds
+    for (let round = 1; round <= 4; round++) {
+        const scoreBoxes = document.querySelectorAll(`.score-box[data-round="${round}"]`);
+        const hasNoGoal = isNoGoal(round);
+
+        scoreBoxes.forEach(box => {
+            const score = parseInt(box.dataset.score);
+            if (hasNoGoal && score !== 0) {
+                box.classList.add('disabled-no-goal');
+                box.style.opacity = '0.3';
+                box.style.cursor = 'not-allowed';
+            } else {
+                box.classList.remove('disabled-no-goal');
+                box.style.opacity = '';
+                box.style.cursor = '';
+            }
+        });
+    }
+}
+
 // Handle goal selection
 function handleGoalSelection(round, goalId) {
     // Find the selected goal
@@ -243,6 +265,9 @@ function handleGoalSelection(round, goalId) {
 
     // Update the goal tile sprite
     updateGoalTiles();
+
+    // Update visual state of score boxes
+    updateScoreBoxesVisualState();
 
     // Save state
     saveGameState();
@@ -340,6 +365,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
         // Update goal tiles with sprite references
         updateGoalTiles();
+
+        // Update visual state of score boxes for "No Goal" rounds
+        updateScoreBoxesVisualState();
 
         // Initialize round highlighting on page load
         if (!hasSavedState) {
@@ -656,12 +684,59 @@ function initializeScoreBoxHandlers() {
     });
 }
 
+// Check if a round has "No Goal" selected
+function isNoGoal(round) {
+    const roundKey = `round${round}`;
+    return gameState.goals &&
+           gameState.goals[roundKey] &&
+           gameState.goals[roundKey].id === 'oc-no-goal';
+}
+
+// Show warning when trying to place cube on non-zero box during "No Goal" round
+function showNoGoalWarning(box) {
+    // Remove any existing warning
+    const existingWarning = document.querySelector('.no-goal-warning');
+    if (existingWarning) {
+        existingWarning.remove();
+    }
+
+    const warning = document.createElement('div');
+    warning.className = 'no-goal-warning';
+    warning.textContent = 'No Goal: Only 0 points allowed';
+    warning.style.position = 'fixed';
+    warning.style.backgroundColor = '#ff6b6b';
+    warning.style.color = 'white';
+    warning.style.padding = '8px 12px';
+    warning.style.borderRadius = '4px';
+    warning.style.fontSize = '14px';
+    warning.style.zIndex = '10000';
+    warning.style.boxShadow = '0 2px 8px rgba(0,0,0,0.2)';
+
+    const rect = box.getBoundingClientRect();
+    warning.style.left = `${rect.left}px`;
+    warning.style.top = `${rect.top - 40}px`;
+
+    document.body.appendChild(warning);
+
+    // Auto-remove after 2 seconds
+    setTimeout(() => {
+        warning.remove();
+    }, 2000);
+}
+
 // Handle score box click
 function handleScoreBoxClick(e) {
     const box = e.currentTarget;
     const round = parseInt(box.dataset.round);
     const score = parseInt(box.dataset.score);
     const position = box.dataset.position;
+
+    // Check if this is a "No Goal" round and restrict to zero points only
+    if (isNoGoal(round) && score !== 0) {
+        // Show a brief message and prevent interaction
+        showNoGoalWarning(box);
+        return;
+    }
 
     // Show player selection menu
     showPlayerMenu(box, round, score, position);
@@ -863,6 +938,9 @@ async function generateNewGame() {
 
         // Update goal tiles after new game
         updateGoalTiles();
+
+        // Update visual state of score boxes for "No Goal" rounds
+        updateScoreBoxesVisualState();
     } catch (error) {
         console.error('Error generating new game:', error);
         alert('Failed to generate new game. Please try again.');
