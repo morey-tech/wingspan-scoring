@@ -919,9 +919,13 @@ function setGoalDisplay(goals) {
         if (goal && row) {
             const nameElement = row.querySelector('.goal-name');
             const descElement = row.querySelector('.goal-description');
+            const goalInfoElement = row.querySelector('.goal-info');
 
             if (nameElement) nameElement.textContent = goal.name;
             if (descElement) descElement.textContent = goal.description;
+            if (goalInfoElement && goal.id) {
+                goalInfoElement.setAttribute('data-goal-id', goal.id);
+            }
         }
     });
 }
