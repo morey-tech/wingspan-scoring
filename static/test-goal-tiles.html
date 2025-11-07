@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Wingspan Goal Tiles - SVG Sprite Test</title>
+    <style>
+        :root {
+            --paper: #f5f1e8;
+            --corner-color: #8b7355;
+            --dark-brown: #3d2817;
+            --taupe: #a89080;
+            --fish-blue: #4a90a4;
+            --seed-orange: #d97644;
+            --fruit-red: #c44569;
+            --invertebrate-green: #6b9d5f;
+            --nectar-pink: #e88bb4;
+            --w: #ffffff;
+            --1: #e88bb4;
+            --n: #4a90a4;
+            --g: #6b9d5f;
+            --s: #d97644;
+            --p: #c44569;
+            --a: #a89080;
+            --n2: #3d2817;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            padding: 2rem;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            padding: 2rem;
+            border-radius: 16px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        h1 {
+            text-align: center;
+            color: #2d3748;
+            margin-bottom: 0.5rem;
+            font-size: 2.5rem;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #718096;
+            margin-bottom: 2rem;
+            font-size: 1.1rem;
+        }
+
+        .section {
+            margin-bottom: 3rem;
+        }
+
+        h2 {
+            color: #4a5568;
+            margin-bottom: 1rem;
+            padding-bottom: 0.5rem;
+            border-bottom: 3px solid #667eea;
+            font-size: 1.8rem;
+        }
+
+        .section-description {
+            color: #718096;
+            margin-bottom: 1.5rem;
+            font-style: italic;
+        }
+
+        .tile-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .tile-container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1rem;
+            border-radius: 12px;
+            background: #f7fafc;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .tile-container:hover {
+            background: #edf2f7;
+            transform: translateY(-4px);
+            box-shadow: 0 8px 16px rgba(0,0,0,0.1);
+        }
+
+        .tile-container svg {
+            width: 150px;
+            height: 150px;
+            margin-bottom: 0.5rem;
+            filter: drop-shadow(0 2px 4px rgba(0,0,0,0.1));
+        }
+
+        .tile-id {
+            font-size: 0.75rem;
+            color: #718096;
+            text-align: center;
+            font-family: 'Courier New', monospace;
+            word-break: break-all;
+            opacity: 0;
+            transition: opacity 0.2s;
+        }
+
+        .tile-container:hover .tile-id {
+            opacity: 1;
+        }
+
+        .stats {
+            background: #f7fafc;
+            padding: 1rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+            text-align: center;
+            border-left: 4px solid #667eea;
+        }
+
+        .stats strong {
+            color: #667eea;
+            font-size: 1.2rem;
+        }
+
+        footer {
+            text-align: center;
+            color: #a0aec0;
+            padding-top: 2rem;
+            margin-top: 2rem;
+            border-top: 1px solid #e2e8f0;
+            font-size: 0.9rem;
+        }
+
+        footer a {
+            color: #667eea;
+            text-decoration: none;
+        }
+
+        footer a:hover {
+            text-decoration: underline;
+        }
+
+        .loading-status {
+            background: #fef5e7;
+            border-left: 4px solid #f39c12;
+            padding: 1rem;
+            margin: 1rem 0 2rem;
+            border-radius: 4px;
+            text-align: center;
+        }
+
+        .loading-status.success {
+            background: #d4edda;
+            border-left-color: #28a745;
+        }
+
+        .loading-status.error {
+            background: #f8d7da;
+            border-left-color: #dc3545;
+        }
+    </style>
+    <script>
+        // Fetch and inline the SVG sprite sheet on page load
+        async function loadSprites() {
+            const statusEl = document.getElementById('sprite-status');
+            try {
+                statusEl.textContent = '⏳ Loading SVG sprite sheet...';
+
+                const response = await fetch('/static/images/svg/wingspan-sprites.svg');
+                if (!response.ok) {
+                    throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+                }
+
+                const svgText = await response.text();
+
+                // Create a hidden container for the sprite sheet
+                const container = document.createElement('div');
+                container.style.display = 'none';
+                container.innerHTML = svgText;
+                document.body.insertBefore(container, document.body.firstChild);
+
+                statusEl.textContent = '✓ SVG Sprite Sheet Loaded Successfully! All 46 goal tiles ready to display.';
+                statusEl.className = 'loading-status success';
+            } catch (error) {
+                statusEl.textContent = '✗ Error loading sprite sheet: ' + error.message;
+                statusEl.className = 'loading-status error';
+                console.error('Sprite loading error:', error);
+            }
+        }
+
+        // Load sprites when DOM is ready
+        window.addEventListener('DOMContentLoaded', loadSprites);
+    </script>
+</head>
+<body>
+    <div class="container">
+        <h1>🦅 Wingspan Goal Tiles</h1>
+        <p class="subtitle">SVG Sprite Sheet Visualization - All 46 Goal Tiles</p>
+
+        <div id="sprite-status" class="loading-status">
+            ⏳ Initializing...
+        </div>
+
+        <!-- Standard Goal Tiles -->
+        <div class="section">
+            <h2>Standard Goal Tiles (34)</h2>
+            <p class="section-description">Base game and expansion goal tiles for competitive play</p>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Habitat Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-in-forest"/></svg>
+                    <div class="tile-id">g-birds-in-forest</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-in-grassland"/></svg>
+                    <div class="tile-id">g-birds-in-grassland</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-in-wetland"/></svg>
+                    <div class="tile-id">g-birds-in-wetland</div>
+                </div>
+            </div>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Egg Location Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggs-in-forest"/></svg>
+                    <div class="tile-id">g-eggs-in-forest</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggs-in-grassland"/></svg>
+                    <div class="tile-id">g-eggs-in-grassland</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggs-in-wetland"/></svg>
+                    <div class="tile-id">g-eggs-in-wetland</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggs-in-bowl"/></svg>
+                    <div class="tile-id">g-eggs-in-bowl</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggs-in-cavity"/></svg>
+                    <div class="tile-id">g-eggs-in-cavity</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggs-in-ground"/></svg>
+                    <div class="tile-id">g-eggs-in-ground</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggs-in-platform"/></svg>
+                    <div class="tile-id">g-eggs-in-platform</div>
+                </div>
+            </div>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Nest Type Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-bowl-with-egg"/></svg>
+                    <div class="tile-id">g-bowl-with-egg</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-cavity-with-egg"/></svg>
+                    <div class="tile-id">g-cavity-with-egg</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-ground-with-egg"/></svg>
+                    <div class="tile-id">g-ground-with-egg</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-platform-with-egg"/></svg>
+                    <div class="tile-id">g-platform-with-egg</div>
+                </div>
+            </div>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Collection & Count Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-egg-habitat-sets"/></svg>
+                    <div class="tile-id">g-egg-habitat-sets</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-total-birds"/></svg>
+                    <div class="tile-id">g-total-birds</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-in-one-row"/></svg>
+                    <div class="tile-id">g-birds-in-one-row</div>
+                </div>
+            </div>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Food Cost Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-inv-in-cost"/></svg>
+                    <div class="tile-id">g-inv-in-cost</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-rodent-fish-in-cost"/></svg>
+                    <div class="tile-id">g-rodent-fish-in-cost</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-fruit-seed-in-cost"/></svg>
+                    <div class="tile-id">g-fruit-seed-in-cost</div>
+                </div>
+            </div>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Point Value & Power Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-3pt-or-under"/></svg>
+                    <div class="tile-id">g-birds-3pt-or-under</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-over-4pt"/></svg>
+                    <div class="tile-id">g-birds-over-4pt</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-brown-powers"/></svg>
+                    <div class="tile-id">g-brown-powers</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-white-no-powers"/></svg>
+                    <div class="tile-id">g-white-no-powers</div>
+                </div>
+            </div>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Bird Feature Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-beak-lt"/></svg>
+                    <div class="tile-id">g-beak-lt</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-beak-rt"/></svg>
+                    <div class="tile-id">g-beak-rt</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-with-tucked-cards"/></svg>
+                    <div class="tile-id">g-birds-with-tucked-cards</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-eggless-birds"/></svg>
+                    <div class="tile-id">g-eggless-birds</div>
+                </div>
+            </div>
+
+            <h3 style="color: #4a5568; margin: 1.5rem 0 1rem; font-size: 1.2rem;">Other Goals</h3>
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-filled-columns"/></svg>
+                    <div class="tile-id">g-filled-columns</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-cubes-on-play-bird"/></svg>
+                    <div class="tile-id">g-cubes-on-play-bird</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-food-owned"/></svg>
+                    <div class="tile-id">g-food-owned</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-in-hand"/></svg>
+                    <div class="tile-id">g-birds-in-hand</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-birds-food-cost"/></svg>
+                    <div class="tile-id">g-birds-food-cost</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-no-goal"/></svg>
+                    <div class="tile-id">g-no-goal</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Duet Mode Goal Tiles -->
+        <div class="section">
+            <h2>Duet Mode Goal Tiles (12)</h2>
+            <p class="section-description">Special goal tiles for two-player Duet mode</p>
+
+            <div class="tile-grid">
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-in-forest"/></svg>
+                    <div class="tile-id">g-duets-in-forest</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-in-grassland"/></svg>
+                    <div class="tile-id">g-duets-in-grassland</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-in-wetland"/></svg>
+                    <div class="tile-id">g-duets-in-wetland</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-in-a-row"/></svg>
+                    <div class="tile-id">g-duets-in-a-row</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-rows-with-duets"/></svg>
+                    <div class="tile-id">g-rows-with-duets</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-in-interior"/></svg>
+                    <div class="tile-id">g-duets-in-interior</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-on-edge"/></svg>
+                    <div class="tile-id">g-duets-on-edge</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-on-nests"/></svg>
+                    <div class="tile-id">g-duets-on-nests</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-on-food"/></svg>
+                    <div class="tile-id">g-duets-on-food</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-duets-on-pairs"/></svg>
+                    <div class="tile-id">g-duets-on-pairs</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-total-duets"/></svg>
+                    <div class="tile-id">g-total-duets</div>
+                </div>
+                <div class="tile-container">
+                    <svg viewBox="0 0 500 500"><use href="#g-fewest-bonus-duets"/></svg>
+                    <div class="tile-id">g-fewest-bonus-duets</div>
+                </div>
+            </div>
+        </div>
+
+        <footer>
+            <p><strong>Source:</strong> Extracted from <a href="https://wingspan.rulepop.com/" target="_blank">wingspan.rulepop.com</a></p>
+            <p>Wingspan © Stonemaier Games | SVG Sprite Sheet: <a href="/static/images/svg/wingspan-sprites.svg" target="_blank">wingspan-sprites.svg</a></p>
+            <p style="margin-top: 1rem; color: #cbd5e0;">Hover over tiles to see their IDs</p>
+        </footer>
+    </div>
+</body>
+</html>
