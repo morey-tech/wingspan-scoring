@@ -565,11 +565,11 @@ header h1 {
 }
 
 .green-second {
-    background: var(--color-track-green-light) !important;
+    background: var(--color-track-green) !important;
 }
 
 .green-third {
-    background: var(--color-track-green) !important;
+    background: var(--color-track-green-dark) !important;
 }
 
 /* Footer */
