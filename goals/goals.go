@@ -139,7 +139,7 @@ var EuropeanGoals = []Goal{
 	{
 		ID:          "eu-filled-columns",
 		Name:        "Filled Columns",
-		Description: "Count the number of columns with all 5 spaces filled",
+		Description: "Count the number of columns with all 3 spaces filled",
 		Expansion:   "european",
 	},
 	{
