@@ -9,6 +9,7 @@ import (
 	"strconv"
 	"wingspan-scoring/db"
 	"wingspan-scoring/goals"
+	importgames "wingspan-scoring/import"
 	"wingspan-scoring/scoring"
 )
 
@@ -65,6 +66,7 @@ func main() {
 	http.HandleFunc("/api/games/", handleGameRoute)
 	http.HandleFunc("/api/stats/", handleGetPlayerStats)
 	http.HandleFunc("/api/leaderboard", handleGetLeaderboard)
+	http.HandleFunc("/api/import", handleImportGames)
 
 	log.Println("Starting Wingspan Scoring server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", loggingMiddleware(http.DefaultServeMux)))
@@ -393,4 +395,70 @@ func parseIntDefault(s string, defaultVal int) int {
 		return i
 	}
 	return defaultVal
+}
+
+func handleImportGames(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Parse multipart form (max 10MB)
+	err := r.ParseMultipartForm(10 << 20)
+	if err != nil {
+		http.Error(w, "Failed to parse form data", http.StatusBadRequest)
+		return
+	}
+
+	// Get the file from form data
+	file, header, err := r.FormFile("csvFile")
+	if err != nil {
+		http.Error(w, "Failed to read file: "+err.Error(), http.StatusBadRequest)
+		return
+	}
+	defer file.Close()
+
+	log.Printf("Processing import file: %s (%d bytes)", header.Filename, header.Size)
+
+	// Import games
+	result, err := importgames.ImportGames(file)
+	if err != nil {
+		log.Printf("Import failed: %v", err)
+
+		// Return error details
+		response := struct {
+			Success       bool                        `json:"success"`
+			Message       string                      `json:"message"`
+			GamesImported int                         `json:"gamesImported"`
+			Errors        []importgames.ImportError   `json:"errors"`
+		}{
+			Success:       false,
+			Message:       err.Error(),
+			GamesImported: result.GamesImported,
+			Errors:        result.Errors,
+		}
+
+		w.Header().Set("Content-Type", "application/json")
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(response)
+		return
+	}
+
+	log.Printf("Successfully imported %d games", result.GamesImported)
+
+	// Return success response
+	response := struct {
+		Success       bool                        `json:"success"`
+		Message       string                      `json:"message"`
+		GamesImported int                         `json:"gamesImported"`
+		Errors        []importgames.ImportError   `json:"errors"`
+	}{
+		Success:       true,
+		Message:       "Import completed successfully",
+		GamesImported: result.GamesImported,
+		Errors:        result.Errors,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	json.NewEncoder(w).Encode(response)
 }
