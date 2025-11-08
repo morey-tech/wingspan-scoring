@@ -10,6 +10,7 @@ document.addEventListener('DOMContentLoaded', () => {
     loadGames();
     initializeEventListeners();
     initializePlayerStats();
+    initializeImportForm();
 });
 
 function initializeEventListeners() {
@@ -489,3 +490,126 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     });
 });
+
+// Import functionality
+function initializeImportForm() {
+    const importForm = document.getElementById('importForm');
+    const csvFileInput = document.getElementById('csvFile');
+    const fileNameSpan = document.getElementById('fileName');
+
+    if (csvFileInput && fileNameSpan) {
+        csvFileInput.addEventListener('change', (e) => {
+            const fileName = e.target.files[0]?.name || 'No file chosen';
+            fileNameSpan.textContent = fileName;
+        });
+    }
+
+    if (importForm) {
+        importForm.addEventListener('submit', handleImportSubmit);
+    }
+}
+
+async function handleImportSubmit(e) {
+    e.preventDefault();
+
+    const csvFileInput = document.getElementById('csvFile');
+    const importStatus = document.getElementById('importStatus');
+    const importProgress = document.getElementById('importProgress');
+    const importErrors = document.getElementById('importErrors');
+
+    // Hide previous messages
+    importStatus.style.display = 'none';
+    importErrors.style.display = 'none';
+
+    // Validate file selection
+    if (!csvFileInput.files || csvFileInput.files.length === 0) {
+        showImportError('Please select a CSV file to import.');
+        return;
+    }
+
+    const file = csvFileInput.files[0];
+
+    // Validate file type
+    if (!file.name.endsWith('.csv')) {
+        showImportError('Please select a valid CSV file.');
+        return;
+    }
+
+    // Show progress
+    importProgress.style.display = 'block';
+
+    // Create form data
+    const formData = new FormData();
+    formData.append('csvFile', file);
+
+    try {
+        const response = await fetch('/api/import', {
+            method: 'POST',
+            body: formData
+        });
+
+        const result = await response.json();
+
+        // Hide progress
+        importProgress.style.display = 'none';
+
+        if (result.success) {
+            showImportSuccess(`Successfully imported ${result.gamesImported} game(s)!`);
+
+            // Reset form
+            csvFileInput.value = '';
+            document.getElementById('fileName').textContent = 'No file chosen';
+
+            // Reload games list and stats
+            setTimeout(() => {
+                loadGames();
+                initializePlayerStats();
+            }, 1000);
+        } else {
+            showImportError(`Import failed: ${result.message}`);
+
+            // Display detailed errors if available
+            if (result.errors && result.errors.length > 0) {
+                displayImportErrors(result.errors);
+            }
+        }
+    } catch (error) {
+        importProgress.style.display = 'none';
+        showImportError(`Import failed: ${error.message}`);
+    }
+}
+
+function showImportSuccess(message) {
+    const importStatus = document.getElementById('importStatus');
+    importStatus.textContent = message;
+    importStatus.className = 'import-status success';
+    importStatus.style.display = 'block';
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        importStatus.style.display = 'none';
+    }, 5000);
+}
+
+function showImportError(message) {
+    const importStatus = document.getElementById('importStatus');
+    importStatus.textContent = message;
+    importStatus.className = 'import-status error';
+    importStatus.style.display = 'block';
+}
+
+function displayImportErrors(errors) {
+    const importErrors = document.getElementById('importErrors');
+
+    let errorHTML = '<h4>Import Errors:</h4><ul>';
+    errors.forEach(error => {
+        const line = error.Line ? `Line ${error.Line}` : '';
+        const gameID = error.GameID ? `Game ${error.GameID}` : '';
+        const location = [line, gameID].filter(Boolean).join(' - ');
+        errorHTML += `<li>${location ? `${location}: ` : ''}${error.Message}</li>`;
+    });
+    errorHTML += '</ul>';
+
+    importErrors.innerHTML = errorHTML;
+    importErrors.style.display = 'block';
+}
