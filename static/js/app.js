@@ -534,17 +534,17 @@ function handlePlayerColorChange(playerId, newColor) {
 }
 
 // Render score table
-function renderScoreTable() {
+async function renderScoreTable() {
     const tbody = document.getElementById('scoreTableBody');
     tbody.innerHTML = '';
 
-    gameState.players.forEach(player => {
+    for (const player of gameState.players) {
         const row = document.createElement('tr');
-        const scores = calculatePlayerScores(player);
+        const scores = await calculatePlayerScores(player);
         const total = scores.reduce((sum, score) => sum + (score || 0), 0);
 
         // Check if this player is winning
-        const isWinner = isPlayerWinning(player.id, total);
+        const isWinner = await isPlayerWinning(player.id, total);
         if (isWinner && total > 0) {
             row.classList.add('winning-player');
         }
@@ -563,23 +563,94 @@ function renderScoreTable() {
             <td class="total-score"><strong>${total}</strong></td>
         `;
         tbody.appendChild(row);
-    });
+    }
 }
 
-// Calculate player scores from cube placements
-function calculatePlayerScores(player) {
+// Calculate scores for a round using the backend API
+async function calculateRoundScoresFromAPI(round) {
+    // Build player counts for this round
+    const playerCounts = {};
+
+    gameState.players.forEach(player => {
+        // Find cube placement for this player in this round
+        for (const [key, colors] of Object.entries(gameState.cubePlacements)) {
+            const [r, score] = key.split('-');
+            if (parseInt(r) === round && colors.includes(player.color)) {
+                playerCounts[player.name] = parseInt(score);
+                break;
+            }
+        }
+    });
+
+    // If no placements for this round, return null
+    if (Object.keys(playerCounts).length === 0) {
+        return null;
+    }
+
+    try {
+        const response = await fetch('/api/calculate-scores', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                mode: currentMode,
+                round: round,
+                playerCounts: playerCounts
+            })
+        });
+
+        if (!response.ok) {
+            console.error('API error:', response.status);
+            return null;
+        }
+
+        return await response.json();
+    } catch (error) {
+        console.error('Error calculating scores for round', round, ':', error);
+        return null;
+    }
+}
+
+// Calculate player scores from cube placements using backend API
+async function calculatePlayerScores(player) {
     const scores = [null, null, null, null];
 
     for (let round = 1; round <= 4; round++) {
-        // Find which score box this player's cube is in for this round
+        // Check if player has a cube placed in this round
+        let hasPlacement = false;
         for (const [key, colors] of Object.entries(gameState.cubePlacements)) {
             const parts = key.split('-');
             const r = parseInt(parts[0]);
-            const score = parseInt(parts[1]);
-            // parts[2] is the position, which we don't need for scoring
+
             if (r === round && colors.includes(player.color)) {
-                scores[round - 1] = score;
+                hasPlacement = true;
                 break;
+            }
+        }
+
+        if (!hasPlacement) {
+            continue;
+        }
+
+        // Get scores from API
+        const apiScores = await calculateRoundScoresFromAPI(round);
+
+        if (apiScores) {
+            // Find this player's score from API response
+            const playerScore = apiScores.find(s => s.playerName === player.name);
+            if (playerScore) {
+                scores[round - 1] = playerScore.points;
+            }
+        } else {
+            // Fallback: if API fails, use box score directly
+            for (const [key, colors] of Object.entries(gameState.cubePlacements)) {
+                const parts = key.split('-');
+                const r = parseInt(parts[0]);
+                const score = parseInt(parts[1]);
+
+                if (r === round && colors.includes(player.color)) {
+                    scores[round - 1] = score;
+                    break;
+                }
             }
         }
     }
@@ -656,11 +727,11 @@ function updateCurrentRoundHighlight() {
 }
 
 // Check if player is winning
-function isPlayerWinning(playerId, playerTotal) {
-    const totals = gameState.players.map((p, idx) => {
-        const scores = calculatePlayerScores(p);
+async function isPlayerWinning(playerId, playerTotal) {
+    const totals = await Promise.all(gameState.players.map(async (p) => {
+        const scores = await calculatePlayerScores(p);
         return scores.reduce((sum, score) => sum + (score || 0), 0);
-    });
+    }));
     const maxTotal = Math.max(...totals);
     return playerTotal === maxTotal && maxTotal > 0;
 }
