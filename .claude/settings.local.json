@@ -16,7 +16,10 @@
       "Bash(git stash:*)",
       "Bash(xmllint:*)",
       "Bash(go run:*)",
-      "Bash(git pull:*)"
+      "Bash(git pull:*)",
+      "Bash(git add:*)",
+      "Bash(git commit:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []

@@ -1,4 +1,4 @@
-name: Build Container Image
+name: Status Checks and Container Build
 
 on:
   push:
