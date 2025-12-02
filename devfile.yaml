@@ -1,12 +1,80 @@
-apiVersion: v2
+schemaVersion: 2.2.0
 metadata:
   name: wingspan-scoring
-spec:
-  services:
-    - name: app
-      build:
-        context: .
-        dockerfile: .devcontainer/ContainerFile
-      resources:
-        memory: 4Gi
-        cpu: 2000m
+  description: Wingspan board game scoring application
+  language: go
+  projectType: Go
+
+components:
+  # Image component for building the development container
+  - name: dev-image
+    image:
+      imageName: wingspan-scoring-dev:latest
+      dockerfile:
+        uri: .devcontainer/ContainerFile
+        buildContext: .
+
+  # Container component for the development environment
+  - name: dev-container
+    container:
+      image: wingspan-scoring-dev:latest
+      memoryLimit: 4Gi
+      cpuLimit: 2000m
+      mountSources: true
+      sourceMapping: /workspaces/wingspan-scoring
+      endpoints:
+        - name: web
+          targetPort: 8080
+          exposure: public
+
+commands:
+  # Build the Go application
+  - id: build
+    exec:
+      component: dev-container
+      commandLine: go build -o wingspan-scoring
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: build
+        isDefault: true
+
+  # Run the application server
+  - id: run
+    exec:
+      component: dev-container
+      commandLine: ./wingspan-scoring
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: run
+        isDefault: true
+
+  # Run all tests
+  - id: test
+    exec:
+      component: dev-container
+      commandLine: go test ./...
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: test
+        isDefault: true
+
+  # Run tests with coverage
+  - id: test-coverage
+    exec:
+      component: dev-container
+      commandLine: go test -coverprofile=coverage.out ./... && go tool cover -func=coverage.out
+      workingDir: ${PROJECT_SOURCE}
+      group:
+        kind: test
+
+  # Download Go dependencies
+  - id: install-deps
+    exec:
+      component: dev-container
+      commandLine: go mod download
+      workingDir: ${PROJECT_SOURCE}
+
+events:
+  # Automatically download dependencies after workspace starts
+  postStart:
+    - install-deps
