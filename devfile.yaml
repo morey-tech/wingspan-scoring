@@ -1,0 +1,10 @@
+apiVersion: v2
+metadata:
+  name: wingspan-scoring
+spec:
+  services:
+    - name: app
+      build:
+        dockerfile: .devcontainer/ContainerFile
+      memory: 4Gi
+      cpu: 2000m
