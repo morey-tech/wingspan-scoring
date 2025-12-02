@@ -5,6 +5,8 @@ spec:
   services:
     - name: app
       build:
+        context: .
         dockerfile: .devcontainer/ContainerFile
-      memory: 4Gi
-      cpu: 2000m
+      resources:
+        memory: 4Gi
+        cpu: 2000m
