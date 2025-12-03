@@ -66,12 +66,20 @@ func CalculateGreenScores(playerCounts map[string]int, round int) []PlayerScore 
 
 			for _, idx := range tiedPlayers {
 				scores[idx].Rank = currentRank
-				scores[idx].Points = avgPoints
+				// Players with 0 count always get 0 points, regardless of rank
+				if scores[idx].Count == 0 {
+					scores[idx].Points = 0
+				} else {
+					scores[idx].Points = avgPoints
+				}
 			}
 		} else {
 			// No tie
 			scores[i].Rank = currentRank
-			if pts, ok := greenScoringRules[round][currentRank]; ok && currentRank <= 3 {
+			// Players with 0 count always get 0 points, regardless of rank
+			if scores[i].Count == 0 {
+				scores[i].Points = 0
+			} else if pts, ok := greenScoringRules[round][currentRank]; ok && currentRank <= 3 {
 				scores[i].Points = pts
 			} else {
 				scores[i].Points = 0 // 4th place and below get 0
