@@ -430,3 +430,56 @@ func TestCalculateBlueScores_BoundaryValues(t *testing.T) {
 		}
 	}
 }
+
+// TestCalculateGreenScores_ZeroCountsRound3 tests that players with zero count get zero points
+// This is a regression test for: https://github.com/morey-tech/wingspan-scoring/issues/80
+// Bug: In rounds 3 and 4, players with 0 count were getting placement-based points instead of 0
+func TestCalculateGreenScores_ZeroCountsRound3(t *testing.T) {
+	playerCounts := map[string]int{
+		"Alice": 5,
+		"Bob":   0, // Should get 0 points, not placement points
+		"Carol": 0, // Should get 0 points, not placement points
+	}
+
+	scores := CalculateGreenScores(playerCounts, 3)
+
+	// Round 3: 1st=6, 2nd=3, 3rd=2
+	// Alice should get 1st place points
+	assert.Equal(t, "Alice", scores[0].PlayerName)
+	assert.Equal(t, 6, scores[0].Points)
+	assert.Equal(t, 1, scores[0].Rank)
+
+	// Bob and Carol have 0 count, so they should ALWAYS get 0 points
+	// regardless of their placement ranking
+	for i := 1; i < len(scores); i++ {
+		if scores[i].Count == 0 {
+			assert.Equal(t, 0, scores[i].Points,
+				"Player %s with 0 count should get 0 points, not placement-based points",
+				scores[i].PlayerName)
+		}
+	}
+}
+
+// TestCalculateGreenScores_ZeroCountsRound4 tests zero count behavior in round 4
+func TestCalculateGreenScores_ZeroCountsRound4(t *testing.T) {
+	playerCounts := map[string]int{
+		"Alice": 8,
+		"Bob":   3,
+		"Carol": 0, // Should get 0 points
+	}
+
+	scores := CalculateGreenScores(playerCounts, 4)
+
+	// Round 4: 1st=7, 2nd=4, 3rd=2
+	assert.Equal(t, "Alice", scores[0].PlayerName)
+	assert.Equal(t, 7, scores[0].Points)
+
+	assert.Equal(t, "Bob", scores[1].PlayerName)
+	assert.Equal(t, 4, scores[1].Points)
+
+	// Carol has 0 count, should get 0 points (not 2 for 3rd place)
+	assert.Equal(t, "Carol", scores[2].PlayerName)
+	assert.Equal(t, 0, scores[2].Count)
+	assert.Equal(t, 0, scores[2].Points,
+		"Player with 0 count should get 0 points, not 3rd place points")
+}
