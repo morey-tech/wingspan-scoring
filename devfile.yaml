@@ -6,18 +6,10 @@ metadata:
   projectType: Go
 
 components:
-  # Image component for building the development container
-  - name: dev-image
-    image:
-      imageName: wingspan-scoring-dev:latest
-      dockerfile:
-        uri: .devcontainer/ContainerFile
-        buildContext: .
-
   # Container component for the development environment
   - name: dev-container
     container:
-      image: wingspan-scoring-dev:latest
+      image: registry.redhat.io/devspaces/udi-rhel9:latest
       memoryLimit: 4Gi
       cpuLimit: 2000m
       mountSources: true
