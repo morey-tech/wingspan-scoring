@@ -14,22 +14,22 @@ import (
 
 // CSVRecord represents a single row in the import CSV
 type CSVRecord struct {
-	GameID           string
-	Date             string
-	IncludeOceania   string
-	PlayerName       string
-	BirdPoints       string
-	BonusCards       string
-	RoundGoals       string
-	Eggs             string
-	CachedFood       string
-	TuckedCards      string
-	NectarForest     string
-	NectarGrassland  string
-	NectarWetland    string
-	UnusedFood       string
-	Total            string
-	Rank             string
+	GameID          string
+	Date            string
+	IncludeOceania  string
+	PlayerName      string
+	BirdPoints      string
+	BonusCards      string
+	RoundGoals      string
+	Eggs            string
+	CachedFood      string
+	TuckedCards     string
+	NectarForest    string
+	NectarGrassland string
+	NectarWetland   string
+	UnusedFood      string
+	Total           string
+	Rank            string
 }
 
 // ImportError represents an error that occurred during import

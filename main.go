@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"strconv"
 	"wingspan-scoring/db"
+	"wingspan-scoring/export"
 	"wingspan-scoring/goals"
 	importgames "wingspan-scoring/import"
 	"wingspan-scoring/scoring"
@@ -67,6 +68,7 @@ func main() {
 	http.HandleFunc("/api/stats/", handleGetPlayerStats)
 	http.HandleFunc("/api/leaderboard", handleGetLeaderboard)
 	http.HandleFunc("/api/import", handleImportGames)
+	http.HandleFunc("/api/export", handleExportGames)
 
 	log.Println("Starting Wingspan Scoring server on :8080")
 	log.Fatal(http.ListenAndServe(":8080", loggingMiddleware(http.DefaultServeMux)))
@@ -213,8 +215,8 @@ func handleCalculateGameEnd(w http.ResponseWriter, r *http.Request) {
 
 	response := struct {
 		Players       []scoring.PlayerGameEnd `json:"players"`
-		NectarScoring scoring.NectarScoring    `json:"nectarScoring"`
-		GameID        int64                    `json:"gameId"`
+		NectarScoring scoring.NectarScoring   `json:"nectarScoring"`
+		GameID        int64                   `json:"gameId"`
 	}{
 		Players:       players,
 		NectarScoring: nectarScoring,
@@ -427,10 +429,10 @@ func handleImportGames(w http.ResponseWriter, r *http.Request) {
 
 		// Return error details
 		response := struct {
-			Success       bool                        `json:"success"`
-			Message       string                      `json:"message"`
-			GamesImported int                         `json:"gamesImported"`
-			Errors        []importgames.ImportError   `json:"errors"`
+			Success       bool                      `json:"success"`
+			Message       string                    `json:"message"`
+			GamesImported int                       `json:"gamesImported"`
+			Errors        []importgames.ImportError `json:"errors"`
 		}{
 			Success:       false,
 			Message:       err.Error(),
@@ -448,10 +450,10 @@ func handleImportGames(w http.ResponseWriter, r *http.Request) {
 
 	// Return success response
 	response := struct {
-		Success       bool                        `json:"success"`
-		Message       string                      `json:"message"`
-		GamesImported int                         `json:"gamesImported"`
-		Errors        []importgames.ImportError   `json:"errors"`
+		Success       bool                      `json:"success"`
+		Message       string                    `json:"message"`
+		GamesImported int                       `json:"gamesImported"`
+		Errors        []importgames.ImportError `json:"errors"`
 	}{
 		Success:       true,
 		Message:       "Import completed successfully",
@@ -461,4 +463,42 @@ func handleImportGames(w http.ResponseWriter, r *http.Request) {
 
 	w.Header().Set("Content-Type", "application/json")
 	json.NewEncoder(w).Encode(response)
+}
+
+func handleExportGames(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodGet {
+		http.Error(w, "Method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	// Get total count to determine limit
+	totalCount, err := db.CountGameResults()
+	if err != nil {
+		log.Printf("Failed to count games for export: %v", err)
+		http.Error(w, "Failed to export games", http.StatusInternalServerError)
+		return
+	}
+
+	// Get all games (use total count as limit to get everything)
+	games, err := db.GetAllGameResults(totalCount, 0)
+	if err != nil {
+		log.Printf("Failed to get games for export: %v", err)
+		http.Error(w, "Failed to export games", http.StatusInternalServerError)
+		return
+	}
+
+	// Convert to CSV
+	csvData, err := export.ExportGamesToCSV(games)
+	if err != nil {
+		log.Printf("Failed to generate CSV: %v", err)
+		http.Error(w, "Failed to generate CSV", http.StatusInternalServerError)
+		return
+	}
+
+	log.Printf("Exporting %d games as CSV", len(games))
+
+	// Set headers for file download
+	w.Header().Set("Content-Type", "text/csv")
+	w.Header().Set("Content-Disposition", "attachment; filename=\"wingspan-games-export.csv\"")
+	w.Write(csvData)
 }

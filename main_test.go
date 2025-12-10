@@ -586,3 +586,93 @@ func TestHandleGameRoute_MethodRouting(t *testing.T) {
 	handleGameRoute(w, req)
 	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
 }
+
+// TestHandleExportGames_EmptyDatabase tests export with no games
+func TestHandleExportGames_EmptyDatabase(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	req := httptest.NewRequest(http.MethodGet, "/api/export", nil)
+	w := httptest.NewRecorder()
+
+	handleExportGames(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "text/csv", w.Header().Get("Content-Type"))
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "attachment")
+	assert.Contains(t, w.Header().Get("Content-Disposition"), "wingspan-games-export.csv")
+
+	// Should contain only the header
+	body := w.Body.String()
+	assert.Contains(t, body, "GameID,Date,IncludeOceania,PlayerName")
+	lines := strings.Split(strings.TrimSpace(body), "\n")
+	assert.Len(t, lines, 1, "Should only have header row")
+}
+
+// TestHandleExportGames_WithGames tests export with saved games
+func TestHandleExportGames_WithGames(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// Save some games
+	games := []struct {
+		players        []scoring.PlayerGameEnd
+		includeOceania bool
+	}{
+		{
+			players: []scoring.PlayerGameEnd{
+				{PlayerName: "Alice", BirdPoints: 45, BonusCards: 12, RoundGoals: 18, Eggs: 9, CachedFood: 5, TuckedCards: 3, UnusedFood: 2, Total: 92, Rank: 1},
+				{PlayerName: "Bob", BirdPoints: 40, BonusCards: 10, RoundGoals: 15, Eggs: 8, CachedFood: 4, TuckedCards: 2, UnusedFood: 1, Total: 79, Rank: 2},
+			},
+			includeOceania: false,
+		},
+		{
+			players: []scoring.PlayerGameEnd{
+				{PlayerName: "Carol", BirdPoints: 50, BonusCards: 15, RoundGoals: 20, Eggs: 10, CachedFood: 6, TuckedCards: 4, NectarForest: 3, NectarGrassland: 2, NectarWetland: 1, UnusedFood: 3, Total: 111, Rank: 1},
+				{PlayerName: "Dave", BirdPoints: 48, BonusCards: 12, RoundGoals: 18, Eggs: 9, CachedFood: 5, TuckedCards: 3, NectarForest: 2, NectarGrassland: 3, NectarWetland: 2, UnusedFood: 2, Total: 102, Rank: 2},
+			},
+			includeOceania: true,
+		},
+	}
+
+	for _, g := range games {
+		nectarScoring := scoring.NectarScoring{
+			Forest:    make(map[string]int),
+			Grassland: make(map[string]int),
+			Wetland:   make(map[string]int),
+		}
+		_, err := db.SaveGameResult(g.players, nectarScoring, g.includeOceania)
+		require.NoError(t, err)
+	}
+
+	req := httptest.NewRequest(http.MethodGet, "/api/export", nil)
+	w := httptest.NewRecorder()
+
+	handleExportGames(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "text/csv", w.Header().Get("Content-Type"))
+
+	body := w.Body.String()
+	lines := strings.Split(strings.TrimSpace(body), "\n")
+	assert.Len(t, lines, 5, "Should have header + 4 player rows")
+
+	// Verify header
+	assert.Contains(t, lines[0], "GameID,Date,IncludeOceania,PlayerName")
+
+	// Verify data contains player names
+	assert.Contains(t, body, "Alice")
+	assert.Contains(t, body, "Bob")
+	assert.Contains(t, body, "Carol")
+	assert.Contains(t, body, "Dave")
+}
+
+// TestHandleExportGames_InvalidMethod tests non-GET methods are rejected
+func TestHandleExportGames_InvalidMethod(t *testing.T) {
+	req := httptest.NewRequest(http.MethodPost, "/api/export", nil)
+	w := httptest.NewRecorder()
+
+	handleExportGames(w, req)
+
+	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
+}

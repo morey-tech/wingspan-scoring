@@ -11,6 +11,7 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeEventListeners();
     initializePlayerStats();
     initializeImportForm();
+    initializeExportButton();
 });
 
 function initializeEventListeners() {
@@ -612,4 +613,76 @@ function displayImportErrors(errors) {
 
     importErrors.innerHTML = errorHTML;
     importErrors.style.display = 'block';
+}
+
+// Export functionality
+function initializeExportButton() {
+    const exportBtn = document.getElementById('exportGamesBtn');
+    if (exportBtn) {
+        exportBtn.addEventListener('click', exportGames);
+    }
+}
+
+async function exportGames() {
+    const exportBtn = document.getElementById('exportGamesBtn');
+    const importStatus = document.getElementById('importStatus');
+
+    // Disable button while exporting
+    exportBtn.disabled = true;
+    exportBtn.textContent = 'Exporting...';
+
+    // Hide previous status messages
+    importStatus.style.display = 'none';
+
+    try {
+        const response = await fetch('/api/export');
+
+        if (!response.ok) {
+            throw new Error('Failed to export games');
+        }
+
+        // Get the CSV data as a blob
+        const blob = await response.blob();
+
+        // Create a download link and trigger it
+        const url = window.URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = 'wingspan-games-export.csv';
+        document.body.appendChild(a);
+        a.click();
+
+        // Cleanup
+        window.URL.revokeObjectURL(url);
+        document.body.removeChild(a);
+
+        showExportSuccess('Games exported successfully!');
+
+    } catch (error) {
+        console.error('Error exporting games:', error);
+        showExportError(`Export failed: ${error.message}`);
+    } finally {
+        // Re-enable button
+        exportBtn.disabled = false;
+        exportBtn.textContent = 'Export All Games';
+    }
+}
+
+function showExportSuccess(message) {
+    const importStatus = document.getElementById('importStatus');
+    importStatus.textContent = message;
+    importStatus.className = 'import-status success';
+    importStatus.style.display = 'block';
+
+    // Auto-hide after 5 seconds
+    setTimeout(() => {
+        importStatus.style.display = 'none';
+    }, 5000);
+}
+
+function showExportError(message) {
+    const importStatus = document.getElementById('importStatus');
+    importStatus.textContent = message;
+    importStatus.className = 'import-status error';
+    importStatus.style.display = 'block';
 }
