@@ -1,7 +1,16 @@
 {
   "permissions": {
     "allow": [
-      "Bash(go fmt:*)"
+      "Bash(go fmt:*)",
+      "Bash(go test:*)",
+      "Bash(go build:*)",
+      "Bash(git add:*)",
+      "Bash(gh pr view:*)",
+      "Bash(gh pr checks:*)",
+      "Bash(git checkout:*)",
+      "Bash(git pull:*)",
+      "Bash(git stash:*)",
+      "Bash(git push:*)"
     ],
     "deny": [],
     "ask": []
