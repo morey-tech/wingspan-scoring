@@ -238,7 +238,7 @@ function updateScoreBoxesVisualState() {
 }
 
 // Handle goal selection
-function handleGoalSelection(round, goalId) {
+async function handleGoalSelection(round, goalId) {
     // Find the selected goal
     const selectedGoal = allGoals.find(g => g.id === goalId);
     if (!selectedGoal) return;
@@ -270,11 +270,11 @@ function handleGoalSelection(round, goalId) {
     updateScoreBoxesVisualState();
 
     // Save state
-    saveGameState();
+    await saveGameState();
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', async function() {
     const newGameBtn = document.getElementById('newGame');
     const toggleModeBtn = document.getElementById('toggleMode');
     const numPlayersSelect = document.getElementById('numPlayers');
@@ -289,13 +289,13 @@ document.addEventListener('DOMContentLoaded', function() {
     toggleModeBtn.classList.add('green-mode');
 
     // Initialize players
-    initializePlayers(parseInt(numPlayersSelect.value));
+    await initializePlayers(parseInt(numPlayersSelect.value));
 
     // Add click handlers to all score boxes
     initializeScoreBoxHandlers();
 
     // Initialize game end section
-    initializeGameEndSection();
+    await initializeGameEndSection();
 
     // Add click event listeners to goal-info areas
     document.querySelectorAll('.goal-info').forEach(goalInfo => {
@@ -360,7 +360,7 @@ document.addEventListener('DOMContentLoaded', function() {
         if (!hasSavedState || !gameState.goals) {
             // Capture the goals that were rendered by the server
             gameState.goals = captureGoalsFromDisplay();
-            saveGameState();
+            await saveGameState();
         }
 
         // Update goal tiles with sprite references
@@ -377,7 +377,7 @@ document.addEventListener('DOMContentLoaded', function() {
 });
 
 // Initialize players based on count
-function initializePlayers(count) {
+async function initializePlayers(count) {
     gameState.players = [];
     for (let i = 0; i < count; i++) {
         gameState.players.push({
@@ -391,7 +391,7 @@ function initializePlayers(count) {
     renderScoreTable();
     // Update game end section with new player count
     if (typeof generateGameEndPlayerRows === 'function') {
-        generateGameEndPlayerRows();
+        await generateGameEndPlayerRows();
     }
 }
 
@@ -418,13 +418,13 @@ function renderPlayerList() {
 
         // Add event listener for name changes
         const input = playerDiv.querySelector('.player-name-input');
-        input.addEventListener('change', (e) => {
+        input.addEventListener('change', async (e) => {
             gameState.players[player.id].name = e.target.value || `Player ${index + 1}`;
             renderScoreTable();
-            saveGameState();
+            await saveGameState();
             // Update game end section with new player name
             if (typeof generateGameEndPlayerRows === 'function') {
-                generateGameEndPlayerRows();
+                await generateGameEndPlayerRows();
             }
         });
 
@@ -506,7 +506,7 @@ function showColorPicker(cubeElement, playerId) {
 }
 
 // Handle player color change
-function handlePlayerColorChange(playerId, newColor) {
+async function handlePlayerColorChange(playerId, newColor) {
     const player = gameState.players.find(p => p.id === playerId);
     if (!player) return;
 
@@ -530,7 +530,7 @@ function handlePlayerColorChange(playerId, newColor) {
     renderPlayerList();
     renderScoreTable();
     renderAllCubes();
-    saveGameState();
+    await saveGameState();
 }
 
 // Render score table
@@ -737,10 +737,10 @@ async function isPlayerWinning(playerId, playerTotal) {
 }
 
 // Handle player count change
-function handlePlayerCountChange(e) {
+async function handlePlayerCountChange(e) {
     const newCount = parseInt(e.target.value);
     if (confirm('Changing player count will clear all placed cubes. Continue?')) {
-        initializePlayers(newCount);
+        await initializePlayers(newCount);
         clearAllCubes(true); // Skip confirmation - already confirmed above
     } else {
         e.target.value = gameState.players.length;
@@ -857,12 +857,12 @@ function showPlayerMenu(box, round, score, position) {
 
     // Add event listeners
     menu.querySelectorAll('.player-menu-item').forEach(item => {
-        item.addEventListener('click', () => {
+        item.addEventListener('click', async () => {
             const playerColor = item.dataset.playerColor;
             toggleCubePlacement(round, score, position, playerColor);
             renderCubesInBox(box, round, score, position);
             renderScoreTable();
-            saveGameState();
+            await saveGameState();
 
             // Update menu to show selection
             showPlayerMenu(box, round, score, position);
@@ -951,7 +951,7 @@ function renderCubesInBox(box, round, score, position) {
 }
 
 // Clear all cubes
-function clearAllCubes(skipConfirm = false) {
+async function clearAllCubes(skipConfirm = false) {
     if (!skipConfirm && !confirm('Clear all placed cubes?')) {
         return;
     }
@@ -964,7 +964,7 @@ function clearAllCubes(skipConfirm = false) {
     });
 
     renderScoreTable();
-    saveGameState();
+    await saveGameState();
     updateCurrentRoundHighlight();
 }
 
@@ -1080,14 +1080,14 @@ function setGoalDisplay(goals) {
 }
 
 // Update the goal display with new goals and save to state
-function updateGoalDisplay(goals) {
+async function updateGoalDisplay(goals) {
     setGoalDisplay(goals);
     gameState.goals = goals;
-    saveGameState();
+    await saveGameState();
 }
 
 // Toggle between blue and green scoring modes
-function toggleScoringMode() {
+async function toggleScoringMode() {
     let isConfirmed = confirm("Are you sure you want to switch sides? This will remove all cube placements!")
     if(!isConfirmed){
         return
@@ -1126,7 +1126,7 @@ function toggleScoringMode() {
     renderAllCubes();
 
     // Save the mode change
-    saveGameState();
+    await saveGameState();
 }
 
 // Render all cubes
@@ -1146,7 +1146,7 @@ function renderAllCubes() {
 }
 
 // Save game state to localStorage
-function saveGameState() {
+async function saveGameState() {
     try {
         const stateToSave = {
             ...gameState,
@@ -1156,7 +1156,7 @@ function saveGameState() {
 
         // Auto-sync round goals to game end section
         if (typeof updateGameEndRoundGoals === 'function') {
-            updateGameEndRoundGoals();
+            await updateGameEndRoundGoals();
         }
     } catch (e) {
         console.error('Failed to save game state:', e);
@@ -1250,7 +1250,7 @@ let gameEndState = {
 };
 
 // Initialize game end section
-function initializeGameEndSection() {
+async function initializeGameEndSection() {
     const calculateBtn = document.getElementById('calculateBtn');
     const clearGameEndBtn = document.getElementById('clearGameEndBtn');
 
@@ -1265,11 +1265,11 @@ function initializeGameEndSection() {
     loadGameEndState();
 
     // Generate player rows for game end table
-    generateGameEndPlayerRows();
+    await generateGameEndPlayerRows();
 }
 
 // Generate player rows for game end table
-function generateGameEndPlayerRows() {
+async function generateGameEndPlayerRows() {
     const tbody = document.getElementById('gameEndTableBody');
     if (!tbody) return;
 
@@ -1289,7 +1289,7 @@ function generateGameEndPlayerRows() {
         const playerColor = player.color || PLAYER_COLORS[i];
 
         // Calculate round goal score for this player
-        const roundGoalScore = calculatePlayerRoundGoalScore(player.color);
+        const roundGoalScore = await calculatePlayerRoundGoalScore(player.color);
 
         const row = document.createElement('tr');
         row.className = 'player-row';
@@ -1445,21 +1445,54 @@ function generateGameEndPlayerRows() {
 }
 
 // Calculate round goal score for a specific player color
-function calculatePlayerRoundGoalScore(playerColor) {
+async function calculatePlayerRoundGoalScore(playerColor) {
     let totalScore = 0;
 
-    // For each round (1-4), find the score for this player's color
+    // Find the player by color to get their name
+    const player = gameState.players.find(p => p.color === playerColor);
+    if (!player) {
+        console.error('Player not found for color:', playerColor);
+        return 0;
+    }
+
+    // For each round (1-4), calculate score using the API
     for (let round = 1; round <= 4; round++) {
-        // Check all cube placement keys for this round
+        // Check if this player has a cube placed in this round
+        let hasPlacement = false;
         for (const [key, colors] of Object.entries(gameState.cubePlacements)) {
             const parts = key.split('-');
             const r = parseInt(parts[0]);
-            const score = parseInt(parts[1]);
 
-            // If this key is for the current round and contains this player's color
             if (r === round && colors && colors.includes(playerColor)) {
-                totalScore += score;
-                break; // Found score for this round, move to next round
+                hasPlacement = true;
+                break;
+            }
+        }
+
+        if (!hasPlacement) {
+            continue;
+        }
+
+        // Get scores from API for this round (handles ties correctly)
+        const apiScores = await calculateRoundScoresFromAPI(round);
+
+        if (apiScores) {
+            const playerScore = apiScores.find(s => s.playerName === player.name);
+            if (playerScore) {
+                totalScore += playerScore.points; // Use tie-adjusted points
+            }
+        } else {
+            // Fallback: if API fails, use raw box score
+            for (const [key, colors] of Object.entries(gameState.cubePlacements)) {
+                const parts = key.split('-');
+                const r = parseInt(parts[0]);
+                const score = parseInt(parts[1]);
+
+                if (r === round && colors && colors.includes(playerColor)) {
+                    console.warn(`API unavailable for round ${round}, using raw score as fallback`);
+                    totalScore += score;
+                    break;
+                }
             }
         }
     }
@@ -1468,13 +1501,13 @@ function calculatePlayerRoundGoalScore(playerColor) {
 }
 
 // Update game end section when round scores change (auto-sync)
-function updateGameEndRoundGoals() {
+async function updateGameEndRoundGoals() {
     const numPlayers = gameState.players.length;
 
     for (let i = 0; i < numPlayers; i++) {
         const player = gameState.players[i];
         const playerNum = i + 1;
-        const roundGoalScore = calculatePlayerRoundGoalScore(player.color);
+        const roundGoalScore = await calculatePlayerRoundGoalScore(player.color);
 
         const roundGoalsInput = document.querySelector(
             `.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`

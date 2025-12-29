@@ -257,6 +257,101 @@ func TestHandleCalculateScores_InvalidMethod(t *testing.T) {
 	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
 }
 
+// TestHandleCalculateScores_TwoPlayerTieRound2_ReturnsAveragedPoints tests tie resolution
+// Two players tie in Round 2 - both should get (5+2)/2 = 3 points, not 5
+func TestHandleCalculateScores_TwoPlayerTieRound2_ReturnsAveragedPoints(t *testing.T) {
+	requestBody := map[string]interface{}{
+		"mode":  "green",
+		"round": 2,
+		"playerCounts": map[string]int{
+			"Player 1": 5, // Both players have same count
+			"Player 2": 5, // This creates a tie for 1st place
+		},
+	}
+
+	body, _ := json.Marshal(requestBody)
+	req := httptest.NewRequest(http.MethodPost, "/api/calculate-scores", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	handleCalculateScores(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+	assert.Equal(t, "application/json", w.Header().Get("Content-Type"))
+
+	var result []goals.PlayerScore
+	err := json.NewDecoder(w.Body).Decode(&result)
+	require.NoError(t, err)
+	assert.Len(t, result, 2)
+
+	// Round 2: 1st=5, 2nd=2
+	// Two tied for 1st: (5+2)/2 = 3 points each (integer division)
+	for _, score := range result {
+		assert.Equal(t, 5, score.Count, "Both players should have count of 5")
+		assert.Equal(t, 3, score.Points, "Tied players should get 3 points each, not 5")
+		assert.Equal(t, 1, score.Rank, "Both players should have rank 1")
+	}
+}
+
+// TestHandleCalculateGameEnd_WithRoundGoalTies_UsesCorrectTieAveragedScores
+// Reproduces the exact bug scenario - verifies totals are 20 and 11, not 22 and 13
+func TestHandleCalculateGameEnd_WithRoundGoalTies_UsesCorrectTieAveragedScores(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	requestBody := map[string]interface{}{
+		"includeOceania": false,
+		"players": []map[string]interface{}{
+			{
+				"playerName":  "Player 1",
+				"birdPoints":  0,
+				"bonusCards":  0,
+				"roundGoals":  20, // 4 + 3 + 6 + 7 = 20
+				"eggs":        0,
+				"cachedFood":  0,
+				"tuckedCards": 0,
+				"unusedFood":  0,
+			},
+			{
+				"playerName":  "Player 2",
+				"birdPoints":  0,
+				"bonusCards":  0,
+				"roundGoals":  11, // 1 + 3 + 3 + 4 = 11
+				"eggs":        0,
+				"cachedFood":  0,
+				"tuckedCards": 0,
+				"unusedFood":  0,
+			},
+		},
+	}
+
+	body, _ := json.Marshal(requestBody)
+	req := httptest.NewRequest(http.MethodPost, "/api/calculate-game-end", bytes.NewBuffer(body))
+	req.Header.Set("Content-Type", "application/json")
+	w := httptest.NewRecorder()
+
+	handleCalculateGameEnd(w, req)
+
+	assert.Equal(t, http.StatusOK, w.Code)
+
+	var result struct {
+		Players       []scoring.PlayerGameEnd `json:"players"`
+		NectarScoring scoring.NectarScoring   `json:"nectarScoring"`
+		GameID        int64                   `json:"gameId"`
+	}
+	err := json.NewDecoder(w.Body).Decode(&result)
+	require.NoError(t, err)
+
+	player1 := result.Players[0]
+	player2 := result.Players[1]
+
+	assert.Equal(t, 20, player1.RoundGoals, "Player 1 should have 20 round goal points (not 22)")
+	assert.Equal(t, 11, player2.RoundGoals, "Player 2 should have 11 round goal points (not 13)")
+
+	assert.Equal(t, 20, player1.Total, "Player 1 total should be 20")
+	assert.Equal(t, 11, player2.Total, "Player 2 total should be 11")
+}
+
 // TestHandleCalculateGameEnd_ValidRequest tests game end calculation and saving
 func TestHandleCalculateGameEnd_ValidRequest(t *testing.T) {
 	cleanup := setupTestDB(t)
