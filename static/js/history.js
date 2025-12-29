@@ -284,6 +284,49 @@ function displayGameDetails(game) {
             </div>
     `;
 
+    // Add round goals breakdown if available
+    if (game.roundBreakdown && Object.keys(game.roundBreakdown).length > 0) {
+        html += `
+            <div class="details-round-breakdown">
+                <h4>Round Goals Breakdown</h4>
+                <table class="details-table">
+                    <thead>
+                        <tr>
+                            <th>Player</th>
+                            <th>Round 1</th>
+                            <th>Round 2</th>
+                            <th>Round 3</th>
+                            <th>Round 4</th>
+                            <th class="total-col">Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+        `;
+
+        game.players.forEach(player => {
+            const breakdown = game.roundBreakdown[player.playerName];
+            if (breakdown) {
+                const total = breakdown.round1 + breakdown.round2 + breakdown.round3 + breakdown.round4;
+                html += `
+                    <tr>
+                        <td><strong>${player.playerName}</strong></td>
+                        <td>${breakdown.round1}</td>
+                        <td>${breakdown.round2}</td>
+                        <td>${breakdown.round3}</td>
+                        <td>${breakdown.round4}</td>
+                        <td class="total-col"><strong>${total}</strong></td>
+                    </tr>
+                `;
+            }
+        });
+
+        html += `
+                    </tbody>
+                </table>
+            </div>
+        `;
+    }
+
     // Add nectar breakdown if Oceania is included
     if (game.includeOceania && game.nectarScoring) {
         html += `

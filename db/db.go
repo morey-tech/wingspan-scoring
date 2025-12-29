@@ -67,7 +67,8 @@ func createTables() error {
 		winner_name TEXT NOT NULL,
 		winner_score INTEGER NOT NULL,
 		players_json TEXT NOT NULL,
-		nectar_json TEXT
+		nectar_json TEXT,
+		round_breakdown_json TEXT
 	);
 
 	CREATE INDEX IF NOT EXISTS idx_created_at ON game_results(created_at DESC);
@@ -75,7 +76,15 @@ func createTables() error {
 	`
 
 	_, err := DB.Exec(schema)
-	return err
+	if err != nil {
+		return err
+	}
+
+	// Migration for existing databases (safe to run multiple times)
+	// ALTER TABLE will fail silently if column already exists
+	_, _ = DB.Exec(`ALTER TABLE game_results ADD COLUMN round_breakdown_json TEXT`)
+
+	return nil
 }
 
 // Close closes the database connection

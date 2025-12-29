@@ -878,3 +878,83 @@ func TestGetLeaderboardStats_TiedScores(t *testing.T) {
 	assert.Equal(t, "Zoe", leaderboard.TotalScore.PlayerName)
 	assert.Equal(t, 100, leaderboard.TotalScore.Score)
 }
+
+// TestSaveGameResult_WithRoundBreakdown tests saving and retrieving round goal breakdown
+func TestSaveGameResult_WithRoundBreakdown(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	players := []scoring.PlayerGameEnd{
+		{
+			PlayerName: "Alice",
+			RoundGoals: 15,
+			RoundGoalsBreakdown: &scoring.RoundGoalBreakdown{
+				Round1: 3,
+				Round2: 5,
+				Round3: 4,
+				Round4: 3,
+			},
+			Total: 100,
+			Rank:  1,
+		},
+		{
+			PlayerName: "Bob",
+			RoundGoals: 12,
+			RoundGoalsBreakdown: &scoring.RoundGoalBreakdown{
+				Round1: 2,
+				Round2: 3,
+				Round3: 4,
+				Round4: 3,
+			},
+			Total: 90,
+			Rank:  2,
+		},
+	}
+	nectarScoring := scoring.NectarScoring{}
+
+	// Save game with round breakdown
+	id, err := SaveGameResult(players, nectarScoring, false)
+	require.NoError(t, err)
+
+	// Retrieve and verify breakdown
+	result, err := GetGameResult(id)
+	require.NoError(t, err)
+	assert.NotNil(t, result.RoundBreakdown)
+
+	// Verify Alice's breakdown
+	aliceBreakdown := result.RoundBreakdown["Alice"]
+	require.NotNil(t, aliceBreakdown)
+	assert.Equal(t, 3, aliceBreakdown.Round1)
+	assert.Equal(t, 5, aliceBreakdown.Round2)
+	assert.Equal(t, 4, aliceBreakdown.Round3)
+	assert.Equal(t, 3, aliceBreakdown.Round4)
+
+	// Verify Bob's breakdown
+	bobBreakdown := result.RoundBreakdown["Bob"]
+	require.NotNil(t, bobBreakdown)
+	assert.Equal(t, 2, bobBreakdown.Round1)
+	assert.Equal(t, 3, bobBreakdown.Round2)
+	assert.Equal(t, 4, bobBreakdown.Round3)
+	assert.Equal(t, 3, bobBreakdown.Round4)
+}
+
+// TestSaveGameResult_BackwardCompatibility_NoBreakdown tests that games without breakdown still work
+func TestSaveGameResult_BackwardCompatibility_NoBreakdown(t *testing.T) {
+	cleanup := setupTestDB(t)
+	defer cleanup()
+
+	// Save game without round breakdown (backward compatibility)
+	players := []scoring.PlayerGameEnd{
+		{PlayerName: "Alice", RoundGoals: 15, Total: 100, Rank: 1},
+		{PlayerName: "Bob", RoundGoals: 12, Total: 90, Rank: 2},
+	}
+	nectarScoring := scoring.NectarScoring{}
+
+	id, err := SaveGameResult(players, nectarScoring, false)
+	require.NoError(t, err)
+
+	// Retrieve and verify breakdown is nil
+	result, err := GetGameResult(id)
+	require.NoError(t, err)
+	assert.Nil(t, result.RoundBreakdown) // Should be nil for games without breakdown
+}

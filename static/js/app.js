@@ -1446,13 +1446,19 @@ async function generateGameEndPlayerRows() {
 
 // Calculate round goal score for a specific player color
 async function calculatePlayerRoundGoalScore(playerColor) {
-    let totalScore = 0;
+    const breakdown = {
+        round1: 0,
+        round2: 0,
+        round3: 0,
+        round4: 0,
+        total: 0
+    };
 
     // Find the player by color to get their name
     const player = gameState.players.find(p => p.color === playerColor);
     if (!player) {
         console.error('Player not found for color:', playerColor);
-        return 0;
+        return breakdown;
     }
 
     // For each round (1-4), calculate score using the API
@@ -1479,7 +1485,8 @@ async function calculatePlayerRoundGoalScore(playerColor) {
         if (apiScores) {
             const playerScore = apiScores.find(s => s.playerName === player.name);
             if (playerScore) {
-                totalScore += playerScore.points; // Use tie-adjusted points
+                breakdown[`round${round}`] = playerScore.points; // Use tie-adjusted points
+                breakdown.total += playerScore.points;
             }
         } else {
             // Fallback: if API fails, use raw box score
@@ -1490,14 +1497,15 @@ async function calculatePlayerRoundGoalScore(playerColor) {
 
                 if (r === round && colors && colors.includes(playerColor)) {
                     console.warn(`API unavailable for round ${round}, using raw score as fallback`);
-                    totalScore += score;
+                    breakdown[`round${round}`] = score;
+                    breakdown.total += score;
                     break;
                 }
             }
         }
     }
 
-    return totalScore;
+    return breakdown;
 }
 
 // Update game end section when round scores change (auto-sync)
@@ -1507,14 +1515,21 @@ async function updateGameEndRoundGoals() {
     for (let i = 0; i < numPlayers; i++) {
         const player = gameState.players[i];
         const playerNum = i + 1;
-        const roundGoalScore = await calculatePlayerRoundGoalScore(player.color);
+        const breakdown = await calculatePlayerRoundGoalScore(player.color);
 
         const roundGoalsInput = document.querySelector(
             `.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`
         );
 
         if (roundGoalsInput) {
-            roundGoalsInput.value = roundGoalScore;
+            roundGoalsInput.value = breakdown.total;
+            // Store breakdown in data attribute for later use
+            roundGoalsInput.dataset.breakdown = JSON.stringify({
+                round1: breakdown.round1,
+                round2: breakdown.round2,
+                round3: breakdown.round3,
+                round4: breakdown.round4
+            });
         }
     }
 }
@@ -1529,11 +1544,15 @@ async function calculateGameEndScores() {
         const playerNum = i + 1;
         const playerName = player.name || `Player ${playerNum}`;
 
+        // Get round goals input to retrieve breakdown
+        const roundGoalsInput = document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`);
+        const breakdownData = roundGoalsInput?.dataset.breakdown ? JSON.parse(roundGoalsInput.dataset.breakdown) : null;
+
         const playerData = {
             playerName: playerName,
             birdPoints: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="birdPoints"]`).value) || 0,
             bonusCards: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="bonusCards"]`).value) || 0,
-            roundGoals: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`).value) || 0,
+            roundGoals: parseInt(roundGoalsInput.value) || 0,
             eggs: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="eggs"]`).value) || 0,
             cachedFood: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="cachedFood"]`).value) || 0,
             tuckedCards: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="tuckedCards"]`).value) || 0,
@@ -1542,6 +1561,11 @@ async function calculateGameEndScores() {
             nectarWetland: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="nectarWetland"]`).value) || 0,
             unusedFood: parseInt(document.querySelector(`.game-end-input[data-player="${playerNum}"][data-field="unusedFood"]`).value) || 0
         };
+
+        // Add round goals breakdown if available
+        if (breakdownData) {
+            playerData.roundGoalsBreakdown = breakdownData;
+        }
 
         players.push(playerData);
     }

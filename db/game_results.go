@@ -10,14 +10,15 @@ import (
 
 // GameResult represents a saved game result
 type GameResult struct {
-	ID             int64                   `json:"id"`
-	CreatedAt      time.Time               `json:"createdAt"`
-	NumPlayers     int                     `json:"numPlayers"`
-	IncludeOceania bool                    `json:"includeOceania"`
-	WinnerName     string                  `json:"winnerName"`
-	WinnerScore    int                     `json:"winnerScore"`
-	Players        []scoring.PlayerGameEnd `json:"players"`
-	NectarScoring  *scoring.NectarScoring  `json:"nectarScoring,omitempty"`
+	ID             int64                                  `json:"id"`
+	CreatedAt      time.Time                              `json:"createdAt"`
+	NumPlayers     int                                    `json:"numPlayers"`
+	IncludeOceania bool                                   `json:"includeOceania"`
+	WinnerName     string                                 `json:"winnerName"`
+	WinnerScore    int                                    `json:"winnerScore"`
+	Players        []scoring.PlayerGameEnd                `json:"players"`
+	NectarScoring  *scoring.NectarScoring                 `json:"nectarScoring,omitempty"`
+	RoundBreakdown map[string]*scoring.RoundGoalBreakdown `json:"roundBreakdown,omitempty"`
 }
 
 // SaveGameResult saves a game result to the database
@@ -47,6 +48,24 @@ func SaveGameResult(players []scoring.PlayerGameEnd, nectarScoring scoring.Necta
 		return 0, fmt.Errorf("failed to marshal players: %w", err)
 	}
 
+	// Marshal round breakdown to JSON (nullable)
+	roundBreakdown := make(map[string]*scoring.RoundGoalBreakdown)
+	for _, p := range players {
+		if p.RoundGoalsBreakdown != nil {
+			roundBreakdown[p.PlayerName] = p.RoundGoalsBreakdown
+		}
+	}
+
+	var roundBreakdownJSON *string
+	if len(roundBreakdown) > 0 {
+		breakdownBytes, err := json.Marshal(roundBreakdown)
+		if err != nil {
+			return 0, fmt.Errorf("failed to marshal round breakdown: %w", err)
+		}
+		breakdownStr := string(breakdownBytes)
+		roundBreakdownJSON = &breakdownStr
+	}
+
 	// Marshal nectar scoring to JSON (nullable)
 	var nectarJSON *string
 	if includeOceania {
@@ -60,11 +79,11 @@ func SaveGameResult(players []scoring.PlayerGameEnd, nectarScoring scoring.Necta
 
 	// Insert into database
 	query := `
-		INSERT INTO game_results (num_players, include_oceania, winner_name, winner_score, players_json, nectar_json)
-		VALUES (?, ?, ?, ?, ?, ?)
+		INSERT INTO game_results (num_players, include_oceania, winner_name, winner_score, players_json, nectar_json, round_breakdown_json)
+		VALUES (?, ?, ?, ?, ?, ?, ?)
 	`
 
-	result, err := DB.Exec(query, len(players), includeOceania, winnerName, winnerScore, string(playersJSON), nectarJSON)
+	result, err := DB.Exec(query, len(players), includeOceania, winnerName, winnerScore, string(playersJSON), nectarJSON, roundBreakdownJSON)
 	if err != nil {
 		return 0, fmt.Errorf("failed to insert game result: %w", err)
 	}
@@ -80,7 +99,7 @@ func SaveGameResult(players []scoring.PlayerGameEnd, nectarScoring scoring.Necta
 // GetGameResult retrieves a single game result by ID
 func GetGameResult(id int64) (*GameResult, error) {
 	query := `
-		SELECT id, created_at, num_players, include_oceania, winner_name, winner_score, players_json, nectar_json
+		SELECT id, created_at, num_players, include_oceania, winner_name, winner_score, players_json, nectar_json, round_breakdown_json
 		FROM game_results
 		WHERE id = ?
 	`
@@ -90,6 +109,7 @@ func GetGameResult(id int64) (*GameResult, error) {
 	var result GameResult
 	var playersJSON string
 	var nectarJSON sql.NullString
+	var roundBreakdownJSON sql.NullString
 
 	err := row.Scan(
 		&result.ID,
@@ -100,6 +120,7 @@ func GetGameResult(id int64) (*GameResult, error) {
 		&result.WinnerScore,
 		&playersJSON,
 		&nectarJSON,
+		&roundBreakdownJSON,
 	)
 	if err != nil {
 		if err == sql.ErrNoRows {
@@ -122,6 +143,15 @@ func GetGameResult(id int64) (*GameResult, error) {
 		result.NectarScoring = &nectar
 	}
 
+	// Unmarshal round breakdown if present
+	if roundBreakdownJSON.Valid {
+		var breakdown map[string]*scoring.RoundGoalBreakdown
+		if err := json.Unmarshal([]byte(roundBreakdownJSON.String), &breakdown); err != nil {
+			return nil, fmt.Errorf("failed to unmarshal round breakdown: %w", err)
+		}
+		result.RoundBreakdown = breakdown
+	}
+
 	return &result, nil
 }
 
@@ -132,7 +162,7 @@ func GetAllGameResults(limit, offset int) ([]GameResult, error) {
 	}
 
 	query := `
-		SELECT id, created_at, num_players, include_oceania, winner_name, winner_score, players_json, nectar_json
+		SELECT id, created_at, num_players, include_oceania, winner_name, winner_score, players_json, nectar_json, round_breakdown_json
 		FROM game_results
 		ORDER BY created_at DESC
 		LIMIT ? OFFSET ?
@@ -149,6 +179,7 @@ func GetAllGameResults(limit, offset int) ([]GameResult, error) {
 		var result GameResult
 		var playersJSON string
 		var nectarJSON sql.NullString
+		var roundBreakdownJSON sql.NullString
 
 		err := rows.Scan(
 			&result.ID,
@@ -159,6 +190,7 @@ func GetAllGameResults(limit, offset int) ([]GameResult, error) {
 			&result.WinnerScore,
 			&playersJSON,
 			&nectarJSON,
+			&roundBreakdownJSON,
 		)
 		if err != nil {
 			return nil, fmt.Errorf("failed to scan row: %w", err)
@@ -176,6 +208,15 @@ func GetAllGameResults(limit, offset int) ([]GameResult, error) {
 				return nil, fmt.Errorf("failed to unmarshal nectar scoring: %w", err)
 			}
 			result.NectarScoring = &nectar
+		}
+
+		// Unmarshal round breakdown if present
+		if roundBreakdownJSON.Valid {
+			var breakdown map[string]*scoring.RoundGoalBreakdown
+			if err := json.Unmarshal([]byte(roundBreakdownJSON.String), &breakdown); err != nil {
+				return nil, fmt.Errorf("failed to unmarshal round breakdown: %w", err)
+			}
+			result.RoundBreakdown = breakdown
 		}
 
 		results = append(results, result)
