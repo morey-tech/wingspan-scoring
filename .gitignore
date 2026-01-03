@@ -16,7 +16,6 @@ wingspan-scoring
 go.work
 
 # IDE
-.vscode/
 .idea/
 *.swp
 *.swo
