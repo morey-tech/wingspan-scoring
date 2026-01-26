@@ -6,7 +6,7 @@ toolchain go1.25.6
 
 require (
 	github.com/stretchr/testify v1.11.1
-	modernc.org/sqlite v1.44.2
+	modernc.org/sqlite v1.44.3
 )
 
 require (
