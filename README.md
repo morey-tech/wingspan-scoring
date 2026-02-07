@@ -160,6 +160,27 @@ Open http://localhost:8080 in your browser
 podman run -p 8080:8080 -v ./data:/app/data:Z ghcr.io/morey-tech/wingspan-scoring:latest
 ```
 
+### Red Hat OpenShift Dev Spaces
+
+The project includes a `devfile.yaml` for cloud-based development in Red Hat OpenShift Dev Spaces.
+
+**Pre-installed Tools:**
+- Go 1.25+
+- Git
+- GitHub CLI (gh) - automatically installed on workspace startup
+- Podman/Buildah container tools
+
+**Automatic Setup:**
+- Go dependencies are automatically downloaded
+- GitHub CLI is checked and installed if needed
+- Setup runs via `.devcontainer/postCreate.sh` script
+
+**Quick Start:**
+1. Open the project in Dev Spaces (or VS Code with Dev Containers)
+2. Wait for automatic setup to complete (~10 seconds first time, ~2 seconds after)
+3. Use `gh` CLI for GitHub operations (PRs, issues, etc.)
+4. Run predefined commands: `build`, `run`, `test`, `test-coverage`
+
 ## Configuration
 
 ### Environment Variables
