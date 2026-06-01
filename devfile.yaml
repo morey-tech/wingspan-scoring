@@ -66,7 +66,14 @@ commands:
       commandLine: go mod download
       workingDir: ${PROJECT_SOURCE}
 
+  # Run post-create setup script
+  - id: post-create
+    exec:
+      component: dev-container
+      commandLine: bash ${PROJECT_SOURCE}/.devcontainer/postCreate.sh
+      workingDir: ${PROJECT_SOURCE}
+
 events:
-  # Automatically download dependencies after workspace starts
+  # Automatically run post-create setup after workspace starts
   postStart:
-    - install-deps
+    - post-create
