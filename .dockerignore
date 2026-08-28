@@ -16,6 +16,15 @@ README.md
 wingspan-scoring
 *.exe
 
+# Browser end-to-end tests -- not part of the Go build
+node_modules
+tests
+package.json
+package-lock.json
+playwright.config.js
+playwright-report
+test-results
+
 # OS files
 .DS_Store
 Thumbs.db

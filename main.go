@@ -22,6 +22,10 @@ var tmpl *template.Template
 // version is set at build time via -ldflags
 var version = "dev"
 
+// defaultNumPlayers is the player count a fresh game starts with. The browser overrides
+// it from the saved game in localStorage when there is one.
+const defaultNumPlayers = 2
+
 func init() {
 	var err error
 	tmpl, err = template.ParseFS(content, "templates/*.html")
@@ -89,7 +93,7 @@ func handleHome(w http.ResponseWriter, r *http.Request) {
 		BaseGame:     true,
 		European:     true,
 		Oceania:      true,
-		NumPlayers:   4, // Default to 4 players
+		NumPlayers:   defaultNumPlayers,
 		PageTitle:    "Round Goals",
 		PageSubtitle: "Round End Goals",
 		CurrentPage:  "home",
@@ -232,7 +236,7 @@ func handleHistory(w http.ResponseWriter, r *http.Request) {
 		BaseGame:     true,
 		European:     true,
 		Oceania:      true,
-		NumPlayers:   4,
+		NumPlayers:   defaultNumPlayers,
 		PageTitle:    "Game History",
 		PageSubtitle: "Game History",
 		CurrentPage:  "history",
