@@ -354,7 +354,7 @@ document.addEventListener('DOMContentLoaded', async function() {
         await fetchAllGoals();
 
         // Load saved state if available
-        const hasSavedState = loadGameState();
+        const hasSavedState = await loadGameState();
 
         // If no saved state with goals, capture goals from server-rendered HTML
         if (!hasSavedState || !gameState.goals) {
@@ -395,6 +395,16 @@ async function initializePlayers(count) {
     }
 }
 
+// Check whether any player other than excludePlayerId already goes by this name.
+// Comparison is case-insensitive: "Alex" and "alex" would collide once scores are keyed
+// by name on the server.
+function isNameTaken(name, excludePlayerId) {
+    const candidate = name.trim().toLowerCase();
+    return gameState.players.some(
+        p => p.id !== excludePlayerId && p.name.trim().toLowerCase() === candidate
+    );
+}
+
 // Render player list in the setup area
 function renderPlayerList() {
     const playerList = document.getElementById('playerList');
@@ -419,7 +429,18 @@ function renderPlayerList() {
         // Add event listener for name changes
         const input = playerDiv.querySelector('.player-name-input');
         input.addEventListener('change', async (e) => {
-            gameState.players[player.id].name = e.target.value || `Player ${index + 1}`;
+            const requested = e.target.value.trim() || `Player ${index + 1}`;
+
+            // Scores are matched to players by name from here on -- the round goal API,
+            // the nectar breakdown and the game end results all key on it. Two players
+            // sharing a name would silently be scored as one, so refuse the change.
+            if (isNameTaken(requested, player.id)) {
+                alert(`Another player is already called "${requested}". Please pick a different name.`);
+                e.target.value = gameState.players[player.id].name;
+                return;
+            }
+
+            gameState.players[player.id].name = requested;
             renderScoreTable();
             await saveGameState();
             // Update game end section with new player name
@@ -533,10 +554,20 @@ async function handlePlayerColorChange(playerId, newColor) {
     await saveGameState();
 }
 
+// Generation counter for renderScoreTable. Most callers fire it without awaiting, so two
+// renders can be in flight at once; only the newest is allowed to write to the DOM.
+let scoreTableRenderToken = 0;
+
 // Render score table
 async function renderScoreTable() {
     const tbody = document.getElementById('scoreTableBody');
-    tbody.innerHTML = '';
+    const token = ++scoreTableRenderToken;
+
+    // Build the rows off-document. This function awaits an API call per player, so
+    // clearing the table up front would leave it half-populated for as long as those
+    // calls take -- and an older render finishing last would leave stale scores on
+    // screen with nothing to trigger a redraw.
+    const rows = document.createDocumentFragment();
 
     for (const player of gameState.players) {
         const row = document.createElement('tr');
@@ -562,8 +593,17 @@ async function renderScoreTable() {
             <td>${scores[3] !== null ? scores[3] : '-'}</td>
             <td class="total-score"><strong>${total}</strong></td>
         `;
-        tbody.appendChild(row);
+        rows.appendChild(row);
     }
+
+    // A newer render started while this one was waiting on the API; its results are
+    // fresher, so drop ours rather than overwriting them.
+    if (token !== scoreTableRenderToken) {
+        return;
+    }
+
+    tbody.innerHTML = '';
+    tbody.appendChild(rows);
 }
 
 // Calculate scores for a round using the backend API
@@ -1164,14 +1204,19 @@ async function saveGameState() {
 }
 
 // Load game state from localStorage
-function loadGameState() {
+async function loadGameState() {
     try {
         const saved = localStorage.getItem('wingspanGameState');
         if (saved) {
             const loaded = JSON.parse(saved);
-            // Only load if player count matches
-            const currentCount = parseInt(document.getElementById('numPlayers').value);
-            if (loaded.players && loaded.players.length === currentCount) {
+            const numPlayersSelect = document.getElementById('numPlayers');
+
+            // The saved game decides how many players there are -- the selector starts
+            // at the server-rendered default, so comparing against it would throw away
+            // every game with a different player count.
+            if (loaded.players && canSelectPlayerCount(numPlayersSelect, loaded.players.length)) {
+                numPlayersSelect.value = String(loaded.players.length);
+
                 // Restore currentMode (default to 'blue' if not found)
                 const savedMode = loaded.currentMode || 'blue';
 
@@ -1199,6 +1244,10 @@ function loadGameState() {
                 // Update round highlighting based on loaded state
                 updateCurrentRoundHighlight();
 
+                // Rebuild the game end table so its rows match the restored roster and
+                // its round goals reflect the restored cubes.
+                await generateGameEndPlayerRows();
+
                 return true; // Successfully loaded saved state
             }
         }
@@ -1206,6 +1255,15 @@ function loadGameState() {
         console.error('Failed to load game state:', e);
     }
     return false; // No saved state found
+}
+
+// Check that the player-count selector actually offers the given count, so a corrupt or
+// out-of-range saved game falls back to a fresh one instead of desyncing the UI.
+function canSelectPlayerCount(select, count) {
+    if (!select || !Number.isInteger(count)) {
+        return false;
+    }
+    return Array.from(select.options).some(option => parseInt(option.value) === count);
 }
 
 // Apply visual state for the current mode
@@ -1268,12 +1326,18 @@ async function initializeGameEndSection() {
     await generateGameEndPlayerRows();
 }
 
+// Generation counter for generateGameEndPlayerRows, for the same reason as
+// scoreTableRenderToken: renaming a player and saving the game can both rebuild this
+// table at once, and the loser must not clobber the winner.
+let gameEndRowsRenderToken = 0;
+
 // Generate player rows for game end table
 async function generateGameEndPlayerRows() {
     const tbody = document.getElementById('gameEndTableBody');
     if (!tbody) return;
 
-    tbody.innerHTML = '';
+    const token = ++gameEndRowsRenderToken;
+    const pendingRows = [];
     const numPlayers = gameState.players.length;
 
     // Helper function to calculate column-major tabindex
@@ -1327,7 +1391,6 @@ async function generateGameEndPlayerRows() {
                        inputmode="numeric"
                        class="score-input game-end-input"
                        min="0"
-                       value="${roundGoalScore}"
                        data-player="${playerNum}"
                        data-field="roundGoals"
                        readonly
@@ -1409,8 +1472,20 @@ async function generateGameEndPlayerRows() {
             </td>
         `;
 
-        tbody.appendChild(row);
+        applyRoundGoalScore(
+            row.querySelector('.game-end-input[data-field="roundGoals"]'),
+            roundGoalScore
+        );
+        pendingRows.push(row);
     }
+
+    // A newer rebuild started while this one was waiting on the API.
+    if (token !== gameEndRowsRenderToken) {
+        return;
+    }
+
+    tbody.innerHTML = '';
+    pendingRows.forEach(row => tbody.appendChild(row));
 
     // Add event listeners to all game end inputs
     document.querySelectorAll('.game-end-input').forEach(input => {
@@ -1442,6 +1517,23 @@ async function generateGameEndPlayerRows() {
     if (oceaniaToggle) {
         handleOceaniaToggle({ target: oceaniaToggle });
     }
+}
+
+// Write a round goal breakdown into a player's read-only Round Goals input: the total in
+// the field itself, and the per-round split in a data attribute so it can be sent to the
+// API and stored with the saved game.
+function applyRoundGoalScore(input, breakdown) {
+    if (!input) {
+        return;
+    }
+
+    input.value = breakdown.total;
+    input.dataset.breakdown = JSON.stringify({
+        round1: breakdown.round1,
+        round2: breakdown.round2,
+        round3: breakdown.round3,
+        round4: breakdown.round4
+    });
 }
 
 // Calculate round goal score for a specific player color
@@ -1517,20 +1609,12 @@ async function updateGameEndRoundGoals() {
         const playerNum = i + 1;
         const breakdown = await calculatePlayerRoundGoalScore(player.color);
 
-        const roundGoalsInput = document.querySelector(
-            `.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`
+        applyRoundGoalScore(
+            document.querySelector(
+                `.game-end-input[data-player="${playerNum}"][data-field="roundGoals"]`
+            ),
+            breakdown
         );
-
-        if (roundGoalsInput) {
-            roundGoalsInput.value = breakdown.total;
-            // Store breakdown in data attribute for later use
-            roundGoalsInput.dataset.breakdown = JSON.stringify({
-                round1: breakdown.round1,
-                round2: breakdown.round2,
-                round3: breakdown.round3,
-                round4: breakdown.round4
-            });
-        }
     }
 }
 

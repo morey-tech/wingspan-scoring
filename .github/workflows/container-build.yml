@@ -11,6 +11,10 @@ on:
       - 'templates/**'
       - 'go.mod'
       - 'go.sum'
+      - 'tests/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'playwright.config.js'
       - 'Containerfile'
       - '.dockerignore'
       - '.github/workflows/container-build.yml'
@@ -63,8 +67,62 @@ jobs:
           name: coverage-report
           path: coverage.out
 
+  # Browser end-to-end tests. The Go unit tests cover the scoring engine; these cover the
+  # page itself -- player counts, cube placement, persistence across reloads and the game
+  # end table -- which is where player-count-specific bugs live.
+  e2e:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+
+      # Playwright starts the app itself (see webServer in playwright.config.js), so the
+      # Go toolchain has to be available here even though nothing calls `go` directly.
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.27'
+
+      - name: Set up Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: npm
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Install Playwright browsers
+        run: npx playwright install --with-deps chromium
+
+      # The Playwright config points the server at a throwaway SQLite file, so this never
+      # touches a real game history.
+      - name: Run browser end-to-end tests
+        run: npx playwright test
+
+      - name: Generate test summary
+        if: ${{ !cancelled() }}
+        run: |
+          echo "## Browser End-to-End Tests" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "Scenarios run against a real Chromium instance for 2, 3 and 4 players:" >> $GITHUB_STEP_SUMMARY
+          echo "" >> $GITHUB_STEP_SUMMARY
+          echo "- Green-side places and every tie shape" >> $GITHUB_STEP_SUMMARY
+          echo "- Blue-side scoring" >> $GITHUB_STEP_SUMMARY
+          echo "- Game state surviving a page reload" >> $GITHUB_STEP_SUMMARY
+          echo "- Game end totals, ranking, tiebreaker and nectar" >> $GITHUB_STEP_SUMMARY
+          echo "- Saved games on the history page" >> $GITHUB_STEP_SUMMARY
+
+      - name: Upload Playwright report
+        if: ${{ !cancelled() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-report
+          path: playwright-report/
+          retention-days: 7
+
   build-and-push:
-    needs: test
+    needs: [test, e2e]
     runs-on: ubuntu-latest
     permissions:
       contents: read

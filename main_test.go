@@ -771,3 +771,153 @@ func TestHandleExportGames_InvalidMethod(t *testing.T) {
 
 	assert.Equal(t, http.StatusMethodNotAllowed, w.Code)
 }
+
+// TestHandleCalculateGameEnd_PlayerCountMatrix runs the full game-end request/response
+// cycle for 2, 3, and 4 players and verifies that the per-round goal breakdown survives
+// the round-trip through the database, which is what the Game History page renders.
+func TestHandleCalculateGameEnd_PlayerCountMatrix(t *testing.T) {
+	type player struct {
+		name      string
+		roundGoal [4]int
+		bird      int
+		bonus     int
+		eggs      int
+		nectar    [3]int // forest, grassland, wetland
+		food      int
+	}
+
+	tests := []struct {
+		name    string
+		players []player
+		// wantOrder is the expected ranking order, best first.
+		wantOrder []string
+	}{
+		{
+			name: "2 players",
+			players: []player{
+				{name: "Alice", roundGoal: [4]int{4, 5, 6, 7}, bird: 40, bonus: 10, eggs: 12, nectar: [3]int{5, 3, 2}, food: 1},
+				{name: "Bob", roundGoal: [4]int{1, 2, 3, 4}, bird: 35, bonus: 8, eggs: 14, nectar: [3]int{2, 6, 1}, food: 3},
+			},
+			wantOrder: []string{"Alice", "Bob"},
+		},
+		{
+			name: "3 players",
+			players: []player{
+				{name: "Alice", roundGoal: [4]int{4, 5, 6, 7}, bird: 44, bonus: 12, eggs: 10, nectar: [3]int{9, 1, 4}, food: 2},
+				{name: "Bob", roundGoal: [4]int{1, 2, 3, 4}, bird: 38, bonus: 9, eggs: 16, nectar: [3]int{5, 7, 2}, food: 4},
+				{name: "Carol", roundGoal: [4]int{0, 0, 2, 2}, bird: 30, bonus: 6, eggs: 11, nectar: [3]int{1, 3, 8}, food: 0},
+			},
+			wantOrder: []string{"Alice", "Bob", "Carol"},
+		},
+		{
+			name: "4 players",
+			players: []player{
+				{name: "Alice", roundGoal: [4]int{4, 5, 6, 7}, bird: 48, bonus: 14, eggs: 13, nectar: [3]int{10, 2, 5}, food: 3},
+				{name: "Bob", roundGoal: [4]int{1, 2, 3, 4}, bird: 40, bonus: 11, eggs: 15, nectar: [3]int{6, 8, 3}, food: 5},
+				{name: "Carol", roundGoal: [4]int{0, 0, 2, 2}, bird: 33, bonus: 8, eggs: 12, nectar: [3]int{2, 4, 9}, food: 1},
+				{name: "Dave", roundGoal: [4]int{0, 0, 0, 0}, bird: 26, bonus: 5, eggs: 9, nectar: [3]int{0, 0, 0}, food: 0},
+			},
+			wantOrder: []string{"Alice", "Bob", "Carol", "Dave"},
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			cleanup := setupTestDB(t)
+			defer cleanup()
+
+			reqPlayers := make([]map[string]interface{}, 0, len(tt.players))
+			wantBreakdown := make(map[string]scoring.RoundGoalBreakdown, len(tt.players))
+			wantRoundGoals := make(map[string]int, len(tt.players))
+
+			for _, p := range tt.players {
+				total := p.roundGoal[0] + p.roundGoal[1] + p.roundGoal[2] + p.roundGoal[3]
+				wantRoundGoals[p.name] = total
+				wantBreakdown[p.name] = scoring.RoundGoalBreakdown{
+					Round1: p.roundGoal[0],
+					Round2: p.roundGoal[1],
+					Round3: p.roundGoal[2],
+					Round4: p.roundGoal[3],
+				}
+
+				reqPlayers = append(reqPlayers, map[string]interface{}{
+					"playerName": p.name,
+					"birdPoints": p.bird,
+					"bonusCards": p.bonus,
+					"roundGoals": total,
+					"roundGoalsBreakdown": map[string]int{
+						"round1": p.roundGoal[0],
+						"round2": p.roundGoal[1],
+						"round3": p.roundGoal[2],
+						"round4": p.roundGoal[3],
+					},
+					"eggs":            p.eggs,
+					"cachedFood":      0,
+					"tuckedCards":     0,
+					"nectarForest":    p.nectar[0],
+					"nectarGrassland": p.nectar[1],
+					"nectarWetland":   p.nectar[2],
+					"unusedFood":      p.food,
+				})
+			}
+
+			body, err := json.Marshal(map[string]interface{}{
+				"includeOceania": true,
+				"players":        reqPlayers,
+			})
+			require.NoError(t, err)
+
+			req := httptest.NewRequest(http.MethodPost, "/api/calculate-game-end", bytes.NewBuffer(body))
+			req.Header.Set("Content-Type", "application/json")
+			w := httptest.NewRecorder()
+
+			handleCalculateGameEnd(w, req)
+			require.Equal(t, http.StatusOK, w.Code)
+
+			var result struct {
+				Players       []scoring.PlayerGameEnd `json:"players"`
+				NectarScoring scoring.NectarScoring   `json:"nectarScoring"`
+				GameID        int64                   `json:"gameId"`
+			}
+			require.NoError(t, json.NewDecoder(w.Body).Decode(&result))
+
+			require.Len(t, result.Players, len(tt.players))
+			require.NotZero(t, result.GameID, "game should have been saved")
+
+			// Ranking order and rank numbering.
+			gotOrder := make([]string, 0, len(result.Players))
+			for i, p := range result.Players {
+				gotOrder = append(gotOrder, p.PlayerName)
+				assert.Equal(t, i+1, p.Rank, "%s should be ranked %d", p.PlayerName, i+1)
+			}
+			assert.Equal(t, tt.wantOrder, gotOrder)
+
+			// Round goals must be echoed back untouched, and the total must be
+			// the sum of every scoring category including nectar.
+			for _, p := range result.Players {
+				assert.Equal(t, wantRoundGoals[p.PlayerName], p.RoundGoals,
+					"round goals for %s", p.PlayerName)
+
+				want := p.BirdPoints + p.BonusCards + p.RoundGoals + p.Eggs +
+					p.CachedFood + p.TuckedCards +
+					result.NectarScoring.Forest[p.PlayerName] +
+					result.NectarScoring.Grassland[p.PlayerName] +
+					result.NectarScoring.Wetland[p.PlayerName]
+				assert.Equal(t, want, p.Total, "total for %s", p.PlayerName)
+			}
+
+			// The saved game must carry the per-round breakdown for every player.
+			saved, err := db.GetGameResult(result.GameID)
+			require.NoError(t, err)
+			assert.Equal(t, len(tt.players), saved.NumPlayers)
+			require.NotNil(t, saved.RoundBreakdown,
+				"round goal breakdown was not persisted")
+
+			for name, want := range wantBreakdown {
+				got, ok := saved.RoundBreakdown[name]
+				require.True(t, ok, "no saved breakdown for %s", name)
+				assert.Equal(t, want, *got, "saved breakdown for %s", name)
+			}
+		})
+	}
+}

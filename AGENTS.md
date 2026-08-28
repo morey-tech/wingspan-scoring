@@ -290,9 +290,36 @@ go tool cover -html=coverage.out
 go test -race ./...
 ```
 
+### Running Browser Tests
+
+The Go tests cover the scoring engine and HTTP handlers. Anything that depends on the
+number of players — the roster, cube placement, `localStorage` persistence, the game end
+table — lives in `static/js/app.js` and is only covered by the Playwright suite. Changes
+to `static/js/`, `templates/` or the player flow need a browser test, not just a Go one.
+
+```bash
+# One-time setup (downloads Chromium, ~115 MB)
+npm install
+npx playwright install chromium
+
+# Run all browser tests
+npm run test:e2e
+
+# Interactive runner
+npm run test:e2e:ui
+
+# A single spec or scenario
+npx playwright test tests/e2e/persistence.spec.js
+npx playwright test --grep "4 players"
+```
+
+Playwright starts the server itself via `webServer` in `playwright.config.js`, pointing
+`DB_PATH` at a temporary SQLite file. Never run these against a real deployment:
+`POST /api/calculate-game-end` writes a game row on every call.
+
 ### Test Organization
 
-Tests are organized alongside source files:
+Go tests are organized alongside source files:
 - `goals/scorer_test.go` - Round goal scoring tests
 - `goals/selector_test.go` - Goal selection tests
 - `goals/goals_test.go` - Goal definition tests
@@ -301,18 +328,46 @@ Tests are organized alongside source files:
 - `db/game_results_test.go` - CRUD operation tests
 - `main_test.go` - HTTP handler tests
 
+Browser tests live under `tests/e2e/`:
+- `tests/e2e/helpers.js` - Shared game actions used by every spec
+- `tests/e2e/round-goals.spec.js` - Green-side places and ties, blue-side scoring
+- `tests/e2e/persistence.spec.js` - Game state surviving a page reload
+- `tests/e2e/game-end.spec.js` - Final totals, ranking, tiebreaker, nectar, history page
+
 ### Test Writing Guidelines
 
+**Go**
 - Use `testify/assert` library for assertions
 - Name pattern: `Test<FunctionName>_<Scenario>`
 - Use table-driven tests for multiple scenarios
 - Test both success and error cases
 - Use temporary databases for database tests
 
+**Playwright**
+- Parameterise scenarios over 2, 3 and 4 players. Most bugs in this app have been
+  player-count-specific, and a 2-player-only test will not catch them.
+- Drive the page through `tests/e2e/helpers.js` rather than raw selectors, and add new
+  actions there so specs stay readable as game actions.
+- Start from `openApp()`. It clears `localStorage` and deals goals with Oceania disabled,
+  because the Oceania "No Goal" tile makes its round reject any cube worth more than zero
+  and would otherwise fail scoring specs at random.
+- Never assert on a table without first waiting via `waitForTablesSettled()` (already
+  built into `placeCube` and the read helpers). The app swaps each finished render in
+  atomically, so a rebuild in flight leaves the previous table on screen — complete,
+  self-consistent and stale. Row counts, network idle and "markup stopped changing" all
+  accept it.
+
 ### CI/CD Integration
 
-Tests run automatically on every push via GitHub Actions. The build fails if:
-- Any test fails
+Tests run automatically on every push via GitHub Actions
+(`.github/workflows/container-build.yml`), in two jobs that both gate the container build:
+
+- `test` - `go test -v -race -coverprofile=coverage.out ./...`, uploads the coverage report
+- `e2e` - `npx playwright test` against a headless Chromium, uploads the HTML report as
+  the `playwright-report` artifact on failure
+
+The build fails if:
+- Any Go or browser test fails
 - Race conditions are detected
 - Code doesn't compile
 - Test coverage drops below threshold

@@ -1,6 +1,7 @@
 package goals
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/stretchr/testify/assert"
@@ -482,4 +483,175 @@ func TestCalculateGreenScores_ZeroCountsRound4(t *testing.T) {
 	assert.Equal(t, 0, scores[2].Count)
 	assert.Equal(t, 0, scores[2].Points,
 		"Player with 0 count should get 0 points, not 3rd place points")
+}
+
+// TestCalculateGreenScores_PlayerCountMatrix exercises green-side scoring across the
+// full 2/3/4-player x round x tie-shape matrix.
+//
+// Expected points follow the official Wingspan tie rule: players who tie add together
+// the points for every place they collectively occupy and divide evenly, rounding down.
+// Places beyond 3rd are worth 0 in every round.
+//
+//	Round 1: 1st=4 2nd=1 3rd=0    Round 3: 1st=6 2nd=3 3rd=2
+//	Round 2: 1st=5 2nd=2 3rd=0    Round 4: 1st=7 2nd=4 3rd=2
+func TestCalculateGreenScores_PlayerCountMatrix(t *testing.T) {
+	tests := []struct {
+		name   string
+		round  int
+		counts map[string]int
+		// want maps player name -> expected points
+		want map[string]int
+	}{
+		// --- 2 players (verified-good baseline) ---
+		{"2P/R1/no ties", 1, map[string]int{"Alice": 5, "Bob": 3}, map[string]int{"Alice": 4, "Bob": 1}},
+		{"2P/R2/no ties", 2, map[string]int{"Alice": 5, "Bob": 3}, map[string]int{"Alice": 5, "Bob": 2}},
+		{"2P/R3/no ties", 3, map[string]int{"Alice": 5, "Bob": 3}, map[string]int{"Alice": 6, "Bob": 3}},
+		{"2P/R4/no ties", 4, map[string]int{"Alice": 5, "Bob": 3}, map[string]int{"Alice": 7, "Bob": 4}},
+		// (4+1)/2, (5+2)/2, (6+3)/2, (7+4)/2
+		{"2P/R1/tie for 1st", 1, map[string]int{"Alice": 5, "Bob": 5}, map[string]int{"Alice": 2, "Bob": 2}},
+		{"2P/R2/tie for 1st", 2, map[string]int{"Alice": 5, "Bob": 5}, map[string]int{"Alice": 3, "Bob": 3}},
+		{"2P/R3/tie for 1st", 3, map[string]int{"Alice": 5, "Bob": 5}, map[string]int{"Alice": 4, "Bob": 4}},
+		{"2P/R4/tie for 1st", 4, map[string]int{"Alice": 5, "Bob": 5}, map[string]int{"Alice": 5, "Bob": 5}},
+
+		// --- 3 players ---
+		{"3P/R1/no ties", 1, map[string]int{"Alice": 5, "Bob": 3, "Carol": 1}, map[string]int{"Alice": 4, "Bob": 1, "Carol": 0}},
+		{"3P/R2/no ties", 2, map[string]int{"Alice": 5, "Bob": 3, "Carol": 1}, map[string]int{"Alice": 5, "Bob": 2, "Carol": 0}},
+		{"3P/R3/no ties", 3, map[string]int{"Alice": 5, "Bob": 3, "Carol": 1}, map[string]int{"Alice": 6, "Bob": 3, "Carol": 2}},
+		{"3P/R4/no ties", 4, map[string]int{"Alice": 5, "Bob": 3, "Carol": 1}, map[string]int{"Alice": 7, "Bob": 4, "Carol": 2}},
+
+		// Two tie for 1st, third player takes 3rd place (2nd is consumed by the tie).
+		{"3P/R1/tie for 1st", 1, map[string]int{"Alice": 5, "Bob": 5, "Carol": 1}, map[string]int{"Alice": 2, "Bob": 2, "Carol": 0}},
+		{"3P/R2/tie for 1st", 2, map[string]int{"Alice": 5, "Bob": 5, "Carol": 1}, map[string]int{"Alice": 3, "Bob": 3, "Carol": 0}},
+		{"3P/R3/tie for 1st", 3, map[string]int{"Alice": 5, "Bob": 5, "Carol": 1}, map[string]int{"Alice": 4, "Bob": 4, "Carol": 2}},
+		{"3P/R4/tie for 1st", 4, map[string]int{"Alice": 5, "Bob": 5, "Carol": 1}, map[string]int{"Alice": 5, "Bob": 5, "Carol": 2}},
+
+		// Two tie for 2nd: they split 2nd + 3rd.
+		{"3P/R1/tie for 2nd", 1, map[string]int{"Alice": 5, "Bob": 3, "Carol": 3}, map[string]int{"Alice": 4, "Bob": 0, "Carol": 0}},
+		{"3P/R2/tie for 2nd", 2, map[string]int{"Alice": 5, "Bob": 3, "Carol": 3}, map[string]int{"Alice": 5, "Bob": 1, "Carol": 1}},
+		{"3P/R3/tie for 2nd", 3, map[string]int{"Alice": 5, "Bob": 3, "Carol": 3}, map[string]int{"Alice": 6, "Bob": 2, "Carol": 2}},
+		{"3P/R4/tie for 2nd", 4, map[string]int{"Alice": 5, "Bob": 3, "Carol": 3}, map[string]int{"Alice": 7, "Bob": 3, "Carol": 3}},
+
+		// All three tie: split 1st + 2nd + 3rd.
+		{"3P/R1/all tied", 1, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4}, map[string]int{"Alice": 1, "Bob": 1, "Carol": 1}},
+		{"3P/R2/all tied", 2, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4}, map[string]int{"Alice": 2, "Bob": 2, "Carol": 2}},
+		{"3P/R3/all tied", 3, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4}, map[string]int{"Alice": 3, "Bob": 3, "Carol": 3}},
+		{"3P/R4/all tied", 4, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4}, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4}},
+
+		// --- 4 players ---
+		{"4P/R1/no ties", 1, map[string]int{"Alice": 7, "Bob": 5, "Carol": 3, "Dave": 1}, map[string]int{"Alice": 4, "Bob": 1, "Carol": 0, "Dave": 0}},
+		{"4P/R2/no ties", 2, map[string]int{"Alice": 7, "Bob": 5, "Carol": 3, "Dave": 1}, map[string]int{"Alice": 5, "Bob": 2, "Carol": 0, "Dave": 0}},
+		{"4P/R3/no ties", 3, map[string]int{"Alice": 7, "Bob": 5, "Carol": 3, "Dave": 1}, map[string]int{"Alice": 6, "Bob": 3, "Carol": 2, "Dave": 0}},
+		{"4P/R4/no ties", 4, map[string]int{"Alice": 7, "Bob": 5, "Carol": 3, "Dave": 1}, map[string]int{"Alice": 7, "Bob": 4, "Carol": 2, "Dave": 0}},
+
+		// Tie for 1st pushes the remaining players to 3rd and 4th.
+		{"4P/R3/tie for 1st", 3, map[string]int{"Alice": 7, "Bob": 7, "Carol": 3, "Dave": 1}, map[string]int{"Alice": 4, "Bob": 4, "Carol": 2, "Dave": 0}},
+		{"4P/R4/tie for 1st", 4, map[string]int{"Alice": 7, "Bob": 7, "Carol": 3, "Dave": 1}, map[string]int{"Alice": 5, "Bob": 5, "Carol": 2, "Dave": 0}},
+
+		// Three tie for 2nd: split 2nd + 3rd + 4th.
+		{"4P/R3/three tie for 2nd", 3, map[string]int{"Alice": 7, "Bob": 4, "Carol": 4, "Dave": 4}, map[string]int{"Alice": 6, "Bob": 1, "Carol": 1, "Dave": 1}},
+		{"4P/R4/three tie for 2nd", 4, map[string]int{"Alice": 7, "Bob": 4, "Carol": 4, "Dave": 4}, map[string]int{"Alice": 7, "Bob": 2, "Carol": 2, "Dave": 2}},
+
+		// Two tie for 3rd: split 3rd + 4th.
+		{"4P/R3/tie for 3rd", 3, map[string]int{"Alice": 7, "Bob": 5, "Carol": 3, "Dave": 3}, map[string]int{"Alice": 6, "Bob": 3, "Carol": 1, "Dave": 1}},
+		{"4P/R4/tie for 3rd", 4, map[string]int{"Alice": 7, "Bob": 5, "Carol": 3, "Dave": 3}, map[string]int{"Alice": 7, "Bob": 4, "Carol": 1, "Dave": 1}},
+
+		// Two separate tie groups in one round.
+		{"4P/R3/tie 1st and tie 3rd", 3, map[string]int{"Alice": 7, "Bob": 7, "Carol": 3, "Dave": 3}, map[string]int{"Alice": 4, "Bob": 4, "Carol": 1, "Dave": 1}},
+
+		// All four tie: split 1st + 2nd + 3rd + 4th.
+		{"4P/R1/all tied", 1, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4, "Dave": 4}, map[string]int{"Alice": 1, "Bob": 1, "Carol": 1, "Dave": 1}},
+		{"4P/R2/all tied", 2, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4, "Dave": 4}, map[string]int{"Alice": 1, "Bob": 1, "Carol": 1, "Dave": 1}},
+		{"4P/R3/all tied", 3, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4, "Dave": 4}, map[string]int{"Alice": 2, "Bob": 2, "Carol": 2, "Dave": 2}},
+		{"4P/R4/all tied", 4, map[string]int{"Alice": 4, "Bob": 4, "Carol": 4, "Dave": 4}, map[string]int{"Alice": 3, "Bob": 3, "Carol": 3, "Dave": 3}},
+
+		// A player with none of the goal item does not qualify for a place, so the
+		// places below them go unawarded rather than sliding up.
+		{"3P/R3/one player has none", 3, map[string]int{"Alice": 5, "Bob": 3, "Carol": 0}, map[string]int{"Alice": 6, "Bob": 3, "Carol": 0}},
+		{"4P/R4/two players have none", 4, map[string]int{"Alice": 5, "Bob": 3, "Carol": 0, "Dave": 0}, map[string]int{"Alice": 7, "Bob": 4, "Carol": 0, "Dave": 0}},
+		{"4P/R3/only one player qualifies", 3, map[string]int{"Alice": 5, "Bob": 0, "Carol": 0, "Dave": 0}, map[string]int{"Alice": 6, "Bob": 0, "Carol": 0, "Dave": 0}},
+		{"4P/R4/nobody qualifies", 4, map[string]int{"Alice": 0, "Bob": 0, "Carol": 0, "Dave": 0}, map[string]int{"Alice": 0, "Bob": 0, "Carol": 0, "Dave": 0}},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			scores := CalculateGreenScores(tt.counts, tt.round)
+
+			assert.Len(t, scores, len(tt.counts))
+
+			got := make(map[string]int, len(scores))
+			for _, s := range scores {
+				got[s.PlayerName] = s.Points
+			}
+			assert.Equal(t, tt.want, got)
+
+			// Total points awarded may never exceed what the goal mat offers for
+			// the round, no matter how the players tie.
+			maxAvailable := 0
+			for place := 1; place <= 3 && place <= len(tt.counts); place++ {
+				maxAvailable += greenScoringRules[tt.round][place]
+			}
+			total := 0
+			for _, p := range got {
+				total += p
+			}
+			assert.LessOrEqual(t, total, maxAvailable,
+				"awarded %d points but round %d only offers %d across %d players",
+				total, tt.round, maxAvailable, len(tt.counts))
+		})
+	}
+}
+
+// TestCalculateGreenScores_BoardValuesAsCounts covers the translation the browser
+// actually performs: it sends the printed value of the goal-mat box a player's cube sits
+// on as that player's "count", relying on the backend to re-derive places from the
+// ordering. Placing cubes on the correct boxes must reproduce the printed points.
+func TestCalculateGreenScores_BoardValuesAsCounts(t *testing.T) {
+	// Printed value of each place box on the green goal mat, by round.
+	board := map[int][]int{
+		1: {4, 1, 0, 0},
+		2: {5, 2, 0, 0},
+		3: {6, 3, 2, 0},
+		4: {7, 4, 2, 0},
+	}
+	names := []string{"Alice", "Bob", "Carol", "Dave"}
+
+	for numPlayers := 2; numPlayers <= 4; numPlayers++ {
+		for round := 1; round <= 4; round++ {
+			t.Run(fmt.Sprintf("%dP/R%d", numPlayers, round), func(t *testing.T) {
+				counts := make(map[string]int, numPlayers)
+				for i := 0; i < numPlayers; i++ {
+					counts[names[i]] = board[round][i]
+				}
+
+				scores := CalculateGreenScores(counts, round)
+
+				for i, s := range scores {
+					want := board[round][i]
+					assert.Equal(t, want, s.Points,
+						"%d-player round %d: cube on the %d-point box scored %d",
+						numPlayers, round, want, s.Points)
+
+					// Rank is only recoverable when the printed value identifies
+					// the box uniquely. In rounds 1 and 2 the 3rd-place and
+					// 4th-place boxes are both printed 0, so a 4-player game
+					// reports both players at rank 3. Harmless -- both boxes are
+					// worth 0 points -- but the distinction is genuinely lost.
+					if occurrences(board[round][:numPlayers], want) == 1 {
+						assert.Equal(t, i+1, s.Rank)
+					}
+				}
+			})
+		}
+	}
+}
+
+// occurrences counts how many times v appears in vals.
+func occurrences(vals []int, v int) int {
+	n := 0
+	for _, x := range vals {
+		if x == v {
+			n++
+		}
+	}
+	return n
 }
