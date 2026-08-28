@@ -236,6 +236,13 @@ wingspan-scoring/
 │       ├── app.js             # Main page interactions
 │       └── history.js         # Game history page logic
 ├── data/                       # SQLite database directory (gitignored)
+├── tests/
+│   └── e2e/
+│       ├── helpers.js         # Shared browser actions (place cube, rename player, ...)
+│       ├── round-goals.spec.js # Green/blue side scoring for 2-4 players
+│       ├── persistence.spec.js # Game state surviving a page reload
+│       └── game-end.spec.js   # Final scoring, ranking, nectar, history page
+├── playwright.config.js        # Browser test config (starts the app on a temp database)
 ├── .github/
 │   └── workflows/
 │       └── container-build.yml # CI/CD pipeline
@@ -302,6 +309,64 @@ go build -o wingspan-scoring
 ```bash
 go fmt ./...
 ```
+
+### Testing
+
+The suite has two halves. Go tests cover the scoring engine and HTTP handlers; Playwright
+tests drive the actual page in a browser, which is where the player-count-specific logic
+lives (roster management, cube placement, `localStorage` persistence, the game end table).
+
+**Go tests**
+
+```bash
+go test ./...                                    # all packages
+go test -race -coverprofile=coverage.out ./...   # as CI runs them
+go tool cover -func=coverage.out | tail -1       # total coverage
+go test -v -run TestCalculateGreenScores ./goals # a single test
+```
+
+**Browser end-to-end tests**
+
+First-time setup downloads Chromium (~115 MB):
+
+```bash
+npm install
+npx playwright install chromium
+```
+
+Then:
+
+```bash
+npm run test:e2e                        # headless, all scenarios
+npm run test:e2e:ui                     # interactive runner
+npx playwright test tests/e2e/round-goals.spec.js
+npx playwright test --grep "4 players"  # one player count
+```
+
+You do **not** need to start the server yourself. `playwright.config.js` launches
+`go run .` with `DB_PATH` pointed at a temporary SQLite file, so the tests never touch a
+real game history — which matters, because `POST /api/calculate-game-end` saves a game
+row on every call.
+
+**What the browser tests cover** — each scenario runs for 2, 3 and 4 players:
+
+| Spec | Covers |
+|------|--------|
+| `tests/e2e/round-goals.spec.js` | Green-side places score their printed value; every tie shape splits points correctly; blue-side scores 1 point per item |
+| `tests/e2e/persistence.spec.js` | A game in progress survives a page reload with its player count, names, cubes and board side intact |
+| `tests/e2e/game-end.spec.js` | Round goals survive a table rebuild; totals, ranking, unused-food tiebreaker and nectar; saved games render on the history page with their per-round breakdown |
+
+`tests/e2e/helpers.js` holds the shared actions (`setPlayerCount`, `placeCube`,
+`renamePlayer`, `calculateGameEnd`, …) so specs read as game actions rather than CSS
+selectors. Two notes if you extend them:
+
+- `openApp()` deals goals with Oceania disabled, then re-enables it. The Oceania "No Goal"
+  tile makes its round refuse any cube worth more than zero, which would otherwise make
+  scoring specs fail at random.
+- Use `waitForTablesSettled()` (already built into `placeCube` and the read helpers)
+  before asserting on a table. The app swaps each finished render in atomically, so a
+  rebuild in flight leaves the *previous* table on screen — complete, self-consistent and
+  out of date. Row counts and network idle both accept that stale table.
 
 ### Build Container
 

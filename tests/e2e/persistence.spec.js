@@ -1,3 +1,11 @@
+/**
+ * A game in progress is held in localStorage and must survive a page refresh.
+ *
+ * This is the scenario that used to separate 2-player games from larger ones: the restore
+ * was gated on the player-count selector, which starts at the server-rendered default, so
+ * any game with a different number of players was silently discarded on load and reset to
+ * a fresh 2-player game. Cubes, names, goals and the chosen board side all vanished.
+ */
 const { test, expect } = require('@playwright/test');
 const {
     openApp,

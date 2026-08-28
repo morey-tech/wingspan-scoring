@@ -1,3 +1,12 @@
+/**
+ * End-of-game scoring, for 2, 3 and 4 players.
+ *
+ * Covers the Round Goals column staying correct when the table is rebuilt, final totals
+ * and ranking, the unused-food tiebreaker, competitive nectar scoring, refusing duplicate
+ * player names (scores are matched by name, so two players sharing one would be scored as
+ * a single competitor), and the saved game appearing on the history page complete with
+ * its per-round goal breakdown.
+ */
 const { test, expect } = require('@playwright/test');
 const {
     GREEN_POSITIONS,

@@ -1,4 +1,14 @@
-// Helpers that let the specs read as game actions rather than CSS selectors.
+/**
+ * Shared actions for the browser tests, so specs read as game actions rather than CSS
+ * selectors: set the player count, place a cube, rename a player, calculate the game end.
+ *
+ * Two things to know before adding to these:
+ *
+ *   - openApp() deals goals with Oceania disabled and then re-enables it. The Oceania
+ *     "No Goal" tile makes its round reject any cube worth more than zero, which would
+ *     make the scoring specs fail at random.
+ *   - waitForTablesSettled() is the only safe way to wait for a table. See its comment.
+ */
 const { expect } = require('@playwright/test');
 
 // Printed value of each green goal-mat place box, by round. Index 0 is 1st place.
@@ -137,12 +147,12 @@ async function waitForTablesSettled(page) {
 }
 
 /**
- * Wait until the Game End table matches the current roster.
+ * Wait until the Game End table's rows match the current roster.
  *
- * generateGameEndPlayerRows() empties the table and then appends one row per player,
- * awaiting API calls in between, so the table passes through states with only some of the
- * players in it. Comparing the rendered names against gameState is the only reliable way
- * to tell a finished rebuild from a half-finished one.
+ * Use this after anything that changes who is playing -- adding a seat, renaming someone.
+ * A rebuild triggered by that change is still in flight, and until it lands the table
+ * shows the previous roster, so comparing the rendered names against gameState is what
+ * tells the two apart. Chains into waitForTablesSettled() for the scores themselves.
  */
 async function waitForGameEndTableInSync(page) {
     await expect

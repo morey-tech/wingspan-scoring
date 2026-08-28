@@ -1,3 +1,15 @@
+/**
+ * Round goal scoring, for 2, 3 and 4 players.
+ *
+ * The green side of the goal mat is competitive: players place a cube on the box for the
+ * place they finished, and the box's printed value is what they score. Players who tie
+ * add together the points for every place they collectively occupy and divide evenly,
+ * rounding down. The blue side is flat -- 1 point per item, capped at 5.
+ *
+ * The browser sends the printed value of the box a cube sits on as that player's "count"
+ * and lets the backend re-derive places from the ordering, so these tests are what proves
+ * that translation is right at every player count.
+ */
 const { test, expect } = require('@playwright/test');
 const {
     GREEN_BOARD,
