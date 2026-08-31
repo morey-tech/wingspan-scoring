@@ -25,7 +25,7 @@ ARG VERSION=dev
 RUN CGO_ENABLED=0 GOOS=linux go build -ldflags="-s -w -X main.version=${VERSION}" -o wingspan-scoring .
 
 # Stage 2: Create minimal runtime image
-FROM registry.access.redhat.com/ubi10-minimal:10.2-1787204459
+FROM registry.access.redhat.com/ubi10-minimal:10.2-1788137716
 
 # Set working directory
 WORKDIR /app
