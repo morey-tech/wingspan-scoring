@@ -2,7 +2,7 @@ module wingspan-scoring
 
 go 1.25.0
 
-toolchain go1.27.0
+toolchain go1.27.1
 
 require (
 	github.com/stretchr/testify v1.12.1
