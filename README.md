@@ -2,6 +2,8 @@
 
 A comprehensive scoring platform for the Wingspan board game. Track round goals, calculate end-game scores, save game results, and view player statistics. Built with Go and designed for containerized deployment on Kubernetes.
 
+[![Open in Dev Spaces](https://www.eclipse.org/che/contribute.svg)](https://devspaces.apps.ocp-mgmt.rh-lab.morey.tech/dashboard/#/load-factory?url=https%3A%2F%2Fgithub.com%2Fmorey-tech%2Fwingspan-scoring)
+
 ## Overview
 
 Wingspan Scoring provides a complete digital scoring solution for Wingspan gameplay sessions:
