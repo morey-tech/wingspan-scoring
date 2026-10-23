@@ -9,15 +9,24 @@ components:
   # Container component for the development environment
   - name: dev-container
     container:
-      image: registry.redhat.io/devspaces/udi-rhel9:latest
+      image: ghcr.io/morey-tech/homelab/devspace-base:latest
       memoryLimit: 4Gi
       cpuLimit: 2000m
       mountSources: true
       sourceMapping: /workspaces/wingspan-scoring
+      volumeMounts:
+        - name: opencode-data
+          path: /home/user/.local/share/opencode
       endpoints:
         - name: web
           targetPort: 8080
           exposure: public
+
+  # Keep OpenCode sessions and data across workspace restarts.
+  - name: opencode-data
+    volume:
+      size: 1Gi
+      ephemeral: false
 
 commands:
   # Build the Go application
